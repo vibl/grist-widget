@@ -22,9 +22,10 @@ function onRecord(row, mappings) {
       // Don't update if the value is already near the current time.
       return;
     }
+    const originalColumnName = mappings?.[column] || column;
     table.update({
       id: row.id, 
-      fields: { [column]: now },
+      fields: { [originalColumnName]: now },
   })
    
   } catch (err) {
