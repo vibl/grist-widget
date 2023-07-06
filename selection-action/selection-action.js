@@ -22,6 +22,10 @@ function handleError(err) {
   data.status = String(err).replace(/^Error: /, '');
 }
 
+function onRecords(rows, mappings) {
+  console.log('onRecords', rows, mappings);
+}
+
 async function onRecord(row, mappings) {
   try {
     data.status = '';
@@ -56,6 +60,7 @@ ready(function() {
   // Update the widget anytime the document data changes.
   grist.ready({columns: [{name: column, title: "Action"}]});
   grist.onRecord(onRecord);
+  grist.onRecords(onRecords);
 
   Vue.config.errorHandler = handleError;
   app = new Vue({
