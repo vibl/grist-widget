@@ -1,4 +1,5 @@
 const column = 'SelectionHistory';
+const msWindow = 2000;
 let table;
 
 function ready(fn) {
@@ -17,9 +18,14 @@ function onRecord(row, mappings) {
     if (!row.hasOwnProperty(column)) {
       throw new Error(`Need a visible column named "${column}". You can map a custom column in the Creator Panel.`);
     }
+    const now = new Date();
+    if (row[column] && now - row[column] < msWindow) {
+      // Don't update if the value is already near the current time.
+      return;
+    }
     table.update({
       id: row.id, 
-      fields: { [column]: new Date() },
+      fields: { [column]: now },
   })
    
   } catch (err) {
