@@ -23,10 +23,15 @@ function handleError(err) {
 }
 
 function onRecords(rows, mappings) {
-  console.log('onRecords', rows, mappings);
+  console.log('onRecords: ');
+  console.dir(rows);
+  console.dir(mappings);
 }
 
 async function onRecord(row, mappings) {
+  console.log('onRecord: ');
+  console.dir(rows);
+  console.dir(mappings);
   try {
     data.status = '';
     data.results = null;
