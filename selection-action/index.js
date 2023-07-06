@@ -17,21 +17,7 @@ let data = {
   }
 }
 
-function handleError(err) {
-  console.error('ERROR', err);
-  data.status = String(err).replace(/^Error: /, '');
-}
-
-function onRecords(rows, mappings) {
-  console.log('onRecords: ');
-  console.dir(rows);
-  console.dir(mappings);
-}
-
 async function onRecord(row, mappings) {
-  console.log('onRecord: ');
-  console.dir(row);
-  console.dir(mappings);
   try {
     data.status = '';
     data.results = null;
@@ -65,12 +51,4 @@ ready(function() {
   // Update the widget anytime the document data changes.
   grist.ready({columns: [{name: column, title: "Action"}]});
   grist.onRecord(onRecord);
-  grist.onRecords(onRecords);
-
-  Vue.config.errorHandler = handleError;
-  app = new Vue({
-    el: '#app',
-    data: data,
-    methods: {applyActions}
-  });
 });

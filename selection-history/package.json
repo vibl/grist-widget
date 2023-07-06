@@ -1,0 +1,13 @@
+{
+  "name": "@vibl/widget-selection-history",
+  "description": "User row selections timestamps are recorded in a column of the table.",
+  "homePage": "https://github.com/vibl/grist-widget",
+  "version": "0.0.1",
+  "grist": {
+    "name": "Selection action",
+    "url": "https://github.com/vibl/grist-widget/selection-history",
+    "widgetId": "@vibl/widget-selection-history",
+    "published": true,
+    "accessLevel": "full"
+  }
+}
