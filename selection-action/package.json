@@ -1,0 +1,13 @@
+{
+  "name": "@vibl/widget-selection-action",
+  "description": "User actions are sent to the data engine on row selection.",
+  "homePage": "https://github.com/vibl/grist-widget",
+  "version": "0.0.1",
+  "grist": {
+    "name": "Selection action",
+    "url": "https://github.com/vibl/grist-widget/selection-action",
+    "widgetId": "@vibl/widget-selection-action",
+    "published": true,
+    "accessLevel": "full"
+  }
+}

@@ -60,3 +60,5 @@ jspm_packages/
 .env
 
 pivottable/.eslintrc.yml
+
+.vscode/
