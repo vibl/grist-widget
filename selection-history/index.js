@@ -34,7 +34,7 @@ function onRecord(row, mappings) {
 
 ready(function() {
   // Update the widget anytime the document data changes.
-  grist.ready({columns: [{name: column, title: "Action"}]});
+  grist.ready({columns: [{name: column, title: "Selection History", type: "DateTime"}]});
   grist.onRecord(onRecord);
   table = grist.getTable();
 });
