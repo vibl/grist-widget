@@ -30,7 +30,7 @@ function onRecords(rows, mappings) {
 
 async function onRecord(row, mappings) {
   console.log('onRecord: ');
-  console.dir(rows);
+  console.dir(row);
   console.dir(mappings);
   try {
     data.status = '';
