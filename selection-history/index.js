@@ -10,6 +10,7 @@ function ready(fn) {
 }
 
 function onRecord(row, mappings) {
+  console.log('onRecord', row, mappings);
   try {
     // If there is no mapping, test the original record.
     row = grist.mapColumnNames(row) || row;
