@@ -1,0 +1,13 @@
+{
+  "name": "@vibl/decisions-insert",
+  "description": "A widget to insert decisions into a Grist table from alternatives and criteria.",
+  "homePage": "https://github.com/vibl/grist-widget",
+  "version": "0.0.1",
+  "grist": {
+    "name": "Selection History",
+    "url": "https://github.com/vibl/grist-widget/selection-history",
+    "widgetId": "@vibl/widget-selection-history",
+    "published": true,
+    "accessLevel": "full"
+  }
+}
