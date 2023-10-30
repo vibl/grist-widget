@@ -26,7 +26,7 @@ function insertRow(table) {
 
 async function main() {
     // Update the widget anytime the document data changes.
-    grist.ready({columns: [{name: column, title: column, type: "Integer"}]});
+    grist.ready({columns: [{name: columnName, title: columnName, type: "Integer"}]});
     let job;
     
     const table = grist.getTable();
