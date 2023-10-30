@@ -2,7 +2,7 @@ const columnName = 'row_insert_scheduler_order';
 const cronPatternOptionName = "Cron pattern";
 const maxRunsOptionName = "Max runs"
 const intervalMs = 1000;
-const defaultCronPattern = "* * * * * *";
+const defaultCronPattern = "* * * * *";
 const defaultMaxRuns = 1e9;
 let columnMappings;
 let order = 1;
