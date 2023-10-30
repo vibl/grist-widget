@@ -4,8 +4,8 @@ const maxRunsOptionName = "maxRuns"; "Max runs";
 const intervalMs = 1000;
 const defaultCronPattern = "* * * * *";
 const defaultMaxRuns = 100_000;
-const cronPatternEl = document.getElementById('cronPattern');
-const maxRunsEl = document.getElementById('maxRuns');
+let cronPatternEl;
+let maxRunsEl;
 let table;
 let isPaused = true;
 let columnMappings;
@@ -71,6 +71,9 @@ async function main() {
       }],
       requiredAccess: "full",
     });
+
+    cronPatternEl = document.getElementById('cronPattern');
+    maxRunsEl = document.getElementById('maxRuns');
 
     grist.onRecord(getMappings);
     table = grist.getTable();
