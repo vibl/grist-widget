@@ -33,7 +33,7 @@ async function main() {
 
     grist.onOptions(async (options) => {
 
-      if(!options) {
+      if(!options?.[cronPatternOptionName] || !options?.[maxRunsOptionName]) {
         await grist.setOption({
           [cronPatternOptionName]: defaultCronPattern,
           [maxRunsOptionName]: defaultMaxRuns,
