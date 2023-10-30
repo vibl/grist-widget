@@ -1,4 +1,4 @@
-const columnName = 'cron_insert_order';
+const columnName = 'row_insert_scheduler_order';
 const cronPatternOptionName = "Cron pattern";
 const maxRunsOptionName = "Max runs"
 const intervalMs = 1000;
@@ -16,7 +16,7 @@ function ready(fn) {
 
 function insertRow(table) {
   try {
-    const originalColumnName = mappings?.[column] || column;
+    const originalColumnName = Grist.mapColumnNamesBack(columnName);
     table.create({ fields: { [originalColumnName]: order } });    
     order++;   
   } catch (err) {
