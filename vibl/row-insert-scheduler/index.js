@@ -2,7 +2,7 @@ const columnName = 'row_insert_scheduler_order';
 const cronPatternOptionName = "Cron pattern";
 const maxRunsOptionName = "Max runs"
 const intervalMs = 1000;
-const defaultCronPattern = "* * * * *";
+const defaultCronPattern = "*/2 * * * * *";
 const defaultMaxRuns = 1e9;
 let order = 1;
 
@@ -20,7 +20,7 @@ function insertRow(table) {
     table.create({ fields: { [originalColumnName]: order } });    
     order++;   
   } catch (err) {
-    handleError(err);
+    console.error(err);
   }
 }
 
