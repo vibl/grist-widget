@@ -1,0 +1,13 @@
+{
+  "name": "@vibl/row-insert-scheduler",
+  "description": "A Grist widget that inserts a new row to a table following to a cron parttern.",
+  "homePage": "https://github.com/vibl/grist-widget",
+  "version": "0.0.1",
+  "grist": {
+    "name": "Row insert scheduler",
+    "url": "https://github.com/vibl/grist-widget/vibl/row-insert-schedule",
+    "widgetId": "@vibl/row-insert-schedule",
+    "published": true,
+    "accessLevel": "full"
+  }
+}
