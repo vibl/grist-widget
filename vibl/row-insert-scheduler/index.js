@@ -16,9 +16,7 @@ function ready(fn) {
 
 function insertRow(table) {
   try {
-    const originalColumnName = grist.mapColumnNamesBack(columnName);
-    console.log("originalColumnName: ", originalColumnName);
-    table.create({ fields: { [originalColumnName]: order } });    
+    table.create({ fields: { [columnName]: order } });    
     order++;   
   } catch (err) {
     console.error(err);
