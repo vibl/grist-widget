@@ -7,7 +7,6 @@ const defaultMaxRuns = 100_000;
 let cronPatternEl;
 let maxRunsEl;
 let table;
-let isPaused = true;
 let columnMappings;
 let order = 1;
 let job;
@@ -41,20 +40,14 @@ async function insertRow(table) {
 }
 
 function startPause() {
-  isPaused = !isPaused;
-  if(isPaused) {
-    if(job) {
-      job.schedule();
-    } else {
-      job.resume();
-    }
-
-  } else {
+  if(job.isRunning()) {
     job.pause();
+  } else {
+    job.resume();
   }
 }
 
-async function saveOptionsAndRestart() {
+async function saveOptions() {
   const cronPattern = cronPatternEl.value;
   const maxRuns = Number(maxRunsEl.value);
   await grist.setOptions({ cronPattern, maxRuns });
