@@ -2,7 +2,7 @@ const columnName = 'row_insert_scheduler_order';
 const cronPatternOptionName = "Cron pattern";
 const maxRunsOptionName = "Max runs"
 const intervalMs = 1000;
-const defaultCronPattern = "*/3 * * * * *";
+const defaultCronPattern = "* * * * * *";
 const defaultMaxRuns = 1e9;
 let columnMappings;
 let order = 1;
@@ -23,10 +23,11 @@ async function insertRow(table) {
   if(!columnMappings) {
     console.warn("Waiting for column mappings...");
     return;
-  } 
+  }
+
+  const column = columnMappings?.[columnName] || columnName
 
   try {
-    const column = columnMappings?.[columnName] || columnName
     await table.create({ fields: { [column]: order } });    
     order++;   
   } catch (err) {
