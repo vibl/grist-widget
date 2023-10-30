@@ -8,5 +8,24 @@
     <script src="index.js?ver=3"></script>
   </head>
   <body>
+    <form>
+      <label for="cronPattern">
+        Cron pattern:
+        <input type="text" id="cronPattern" name="cronPattern">
+      </label>
+      <p>
+        A Cron pattern. See: 
+        <a href="https://github.com/hexagon/croner#pattern" target="_blank">https://github.com/hexagon/croner#pattern</a>
+      </p>
+      <label for="maxRuns">
+        Max runs:
+        <input type="text" id="maxRuns" name="maxRuns">
+      </label>
+      <p>
+        Maximum number of runs. Default: 100k.
+      </p>
+      <button onClick="saveOptionsAndRestart()">Start/Pause</button>
+      </form>
+      <button onClick="startPause()">Start/Pause</button>
   </body>
 </html>

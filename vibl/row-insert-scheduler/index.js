@@ -3,9 +3,14 @@ const cronPatternOptionName = "cronPattern"; // "Cron pattern";
 const maxRunsOptionName = "maxRuns"; "Max runs";
 const intervalMs = 1000;
 const defaultCronPattern = "* * * * *";
-const defaultMaxRuns = 1e9;
+const defaultMaxRuns = 100_000;
+const cronPatternEl = document.getElementById('cronPattern');
+const maxRunsEl = document.getElementById('maxRuns');
+let table;
+let isPaused = true;
 let columnMappings;
 let order = 1;
+let job;
 
 function ready(fn) {
   if (document.readyState !== 'loading'){
@@ -35,6 +40,26 @@ async function insertRow(table) {
   }
 }
 
+function startPause() {
+  isPaused = !isPaused;
+  if(isPaused) {
+    if(job) {
+      job.schedule();
+    } else {
+      job.resume();
+    }
+
+  } else {
+    job.pause();
+  }
+}
+
+async function saveOptionsAndRestart() {
+  const cronPattern = cronPatternEl.value;
+  const maxRuns = Number(maxRunsEl.value);
+  await grist.setOptions({ cronPattern, maxRuns });
+}
+
 async function main() {
     // Update the widget anytime the document data changes.
     grist.ready({
@@ -48,28 +73,28 @@ async function main() {
     });
 
     grist.onRecord(getMappings);
-
-    let job;
-    const table = grist.getTable();
+    table = grist.getTable();
 
     grist.onOptions(async (options) => {
 
-      if(!options?.[cronPatternOptionName] || !options?.[maxRunsOptionName]) {
+      if(!options?.cronPattern || !options?.maxRuns) {
         await grist.setOptions({
-          [cronPatternOptionName]: defaultCronPattern,
-          [maxRunsOptionName]: defaultMaxRuns,
+          cronPattern: defaultCronPattern,
+          maxRuns: defaultMaxRuns,
         });
         
         return;
       }
-      console.log("options: ", options);
-      const { [cronPatternOptionName]: cronPattern, [maxRunsOptionName]: maxRuns } = options;
+
+      cronPatternEl.value = cronPattern;
+      maxRunsEl.value = maxRuns;
+      console.log("Widget row-insert-scheduler options: ", options);
 
       if(job?.isRunning()) {
         job.stop();
       }
 
-      job = Cron(cronPattern, { maxRuns }, () => insertRow(table) );
+      job = Cron(cronPattern, { maxRuns, paused: true }, () => insertRow(table));
     });
 }
 
