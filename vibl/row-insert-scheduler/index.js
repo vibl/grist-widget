@@ -1,6 +1,6 @@
 const columnName = 'row_insert_scheduler_order';
-const cronPatternOptionName = "Cron pattern";
-const maxRunsOptionName = "Max runs"
+const cronPatternOptionName = "cronPattern"; // "Cron pattern";
+const maxRunsOptionName = "maxRuns"; "Max runs";
 const intervalMs = 1000;
 const defaultCronPattern = "* * * * *";
 const defaultMaxRuns = 1e9;
