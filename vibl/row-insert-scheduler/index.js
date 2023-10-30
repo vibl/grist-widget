@@ -88,7 +88,8 @@ async function main() {
         
         return;
       }
-
+      
+      let { cronPattern, maxRuns } = options;
       cronPatternEl.value = cronPattern;
       maxRunsEl.value = maxRuns;
       console.log("Widget row-insert-scheduler options: ", options);
