@@ -2,8 +2,9 @@ const columnName = 'row_insert_scheduler_order';
 const cronPatternOptionName = "Cron pattern";
 const maxRunsOptionName = "Max runs"
 const intervalMs = 1000;
-const defaultCronPattern = "*/2 * * * * *";
+const defaultCronPattern = "*/3 * * * * *";
 const defaultMaxRuns = 1e9;
+let columnMappings;
 let order = 1;
 
 function ready(fn) {
@@ -14,9 +15,19 @@ function ready(fn) {
   }
 }
 
-function insertRow(table) {
+function getMappings(_, mappings) {
+  columnMappings = mappings;
+}
+
+async function insertRow(table) {
+  if(!columnMappings) {
+    console.warn("Waiting for column mappings...");
+    return;
+  } 
+
   try {
-    table.create({ fields: { [columnName]: order } });    
+    const column = columnMappings?.[columnName] || columnName
+    await table.create({ fields: { [column]: order } });    
     order++;   
   } catch (err) {
     console.error(err);
@@ -26,9 +37,16 @@ function insertRow(table) {
 async function main() {
     // Update the widget anytime the document data changes.
     grist.ready({
-      columns: [{name: columnName, title: columnName, type: "Integer"}],
+      columns: [{
+        name: columnName, 
+        title: columnName, 
+        description: "This column will receive incremental integers in order of insertion, starting from 1.",
+        type: "Int",
+      }],
       requiredAccess: "full",
     });
+
+    grist.onRecord(getMappings);
 
     let job;
     const table = grist.getTable();
