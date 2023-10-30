@@ -1,0 +1,16 @@
+{
+  "name": "@vibl/clock_ticker",
+  "description": "A Grist widget that refreshed a NOW timestamp column every second.",
+  "homePage": "https://github.com/vibl/grist-widget",
+  "version": "0.0.1",
+  "grist": {
+    "name": "Clock ticker",
+    "url": "https://github.com/vibl/grist-widget/selection-history",
+    "widgetId": "@vibl/widget-selection-history",
+    "published": true,
+    "accessLevel": "full"
+  },
+  "dependencies": {
+    "croner": "^7.0.4"
+  }
+}
