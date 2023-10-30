@@ -31,17 +31,17 @@ async function main() {
     
     const table = grist.getTable();
 
-    grist.onOptions((options) => {
+    grist.onOptions(async (options) => {
 
       if(!options) {
-        grist.setOption({
+        await grist.setOption({
           [cronPatternOptionName]: defaultCronPattern,
           [maxRunsOptionName]: defaultMaxRuns,
         });
         
         return;
       }
-      
+      console.log("options: ", options);
       const { [cronPatternOptionName]: cronPattern, [maxRunsOptionName]: maxRuns } = options;
 
       if(job?.isRunning()) {
