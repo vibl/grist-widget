@@ -56,9 +56,12 @@ async function sendRequest(record) {
   const { request } = record;
   console.log('request:', request)
   const { url, options: optionsStr, parameters } = request;
+  console.log('parameters:', parameters)
+  console.log('url:', url)
   const options = optionsStr ? JSON.parse(optionsStr) : {};
   options.method = options.body && !parameters ? "POST" : "GET";
   const parametersStr = (new URLSearchParams(parameters)).toString();
+  console.log('parametersStr:', parametersStr)
   const completeURL = url + parametersStr; // url should end with "/" for this to work!
   console.log('completeURL:', completeURL);
   console.log('options:', options);
@@ -66,6 +69,7 @@ async function sendRequest(record) {
     const response = await fetch(completeURL, options);
     const body = await response.text();
     console.log("response body:", body);
+    table.update({ id: record.id, fields: { response: body } });
   } catch (err) {
     handleError(err);
   }
