@@ -6,11 +6,11 @@ ready(function () {
     requiredAccess: "full",
     columns: [
       {
-        name: "request",
+        name: "config",
         type: "Text",
         strictType: true,
-        title: "Request",
-        description: "Request options: url, options, parameters",
+        title: "Config",
+        description: "Config for request (url, options, parameters) and output (tableName and jsonataPattern)",
       },
       {
         name: "send",
@@ -37,15 +37,23 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
     const record = mapGristRecord(
       rawRecord,
       mappedColNamesToRealColNames,
-      ["request", "send", "response"]
+      ["config", "send", "response"]
     );
     if (!record) {
       throw new Error("Please map all required columns first.");
     }
     if (record.send) {
+      const id = record.id;
       console.log("send:", JSON.stringify(record, null, 2));
-      await sendRequest(record);
-      table.update({ id: record.id, fields: { send: false } });
+      const results = await sendRequest(record);
+      const resultsStr = JSON.stringify(results, null, 2);
+      console.log("request results:", resultsStr);
+      table.update({ id, fields: { response: resultsStr } });  
+      const output = processResults(results, record.output.tableName, record.output.jsonataPattern);
+      const outputStr = JSON.stringify(output, null, 2);
+      table.update({ id, fields: { output: outputStr } });
+      console.log('Results output:', output)
+      table.update({ id, fields: { send: false } });
     }
   } catch (err) {
     handleError(err);
@@ -53,22 +61,22 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
 }
 
 async function sendRequest(record) {
-  const { request } = record;
-  console.log('request:', request)
-  const { url, options, parameters } = JSON.parse(request);
+  const { request: { url, options, parameters }, output: { tableName, jsonataPattern } } = JSON.parse(record.config);
   options.method = options?.body && !parameters ? "POST" : "GET";
   const parametersStr = (new URLSearchParams(parameters)).toString();
   const completeURL = `${url}?${parametersStr}`; // url should end with "/" for this to work!
-  console.log('completeURL:', completeURL);
-  console.log('options:', options);
   try {
     const response = await fetch(completeURL, options);
-    const body = await response.text();
-    console.log("response body:", body);
-    table.update({ id: record.id, fields: { response: body } });
+    return response.json();
   } catch (err) {
     handleError(err);
   }
+}
+
+function processResults(results, tableName, jsonataPattern) {
+  const jsonata = JSONata(jsonataPattern);
+  const processedResults = jsonata.evaluate(results);
+  return processedResults;
 }
 
 function mapGristRecord(record, colMap, requiredTruthyCols) {
