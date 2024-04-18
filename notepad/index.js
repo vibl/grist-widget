@@ -1,95 +1,104 @@
-const {Subject} = rxjs;
-const {debounceTime} = rxjs.operators;
+let currentRecordID = null;
+let table;
+const REQUIRED_COLUMNS = ["request", "doFetch", "response"];
 
-const toolbarOptions = [
-  ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
-  ['blockquote', 'code-block'],
-
-  [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-  [{ 'size': ['small', false, 'large', 'huge'] }],  // font sizes
-
-  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-  [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
-  [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
-  [{ 'direction': 'rtl' }],                         // text direction
-
-
-  [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
-  [{ 'font': [] }],
-  [{ 'align': [] }],
-
-  ['clean']                                         // remove formatting button
-];
-
-// Create quill editor
-const quill = new Quill('#editor', {
-  theme: 'snow',
-  modules: {
-    toolbar: toolbarOptions,
-    imageResize: {
-      displaySize: true
-    }
-  },
+ready(function(){
+  // Set up a global error handler.
+  window.addEventListener("error", function(err) {
+    handleError(err);
+  });
+  grist.ready({
+    requiredAccess: "full",
+    columns: [
+      { name: "request", type: "Text", strictType: true, title: "Request", description: "Request options: url, options, parameters" },
+      { name: "doFetch", type: "Bool", title: "Send", description: "Fetch now" },
+      { name: "response", type: "Text", strictType: true, title: "Response", description: "Receives response body" },
+    ],
+  });
+  table = grist.getTable();
+  grist.onRecord(onRecord);
+  console.log("Fetcher: Ready.");
 });
 
-let column;
-let id;
-let lastContent;
-let lastSave;
-let tableId;
-
-function safeParse(value) {
+async function onRecord(record, mappedColNamesToRealColNames) {
   try {
-    return JSON.parse(value);
-  } catch (err) {
-    if (typeof value === 'string') {
-      return {ops: [{insert: `${value}\n`}]};
+    const mappedRecord = mapGristRecord(record, mappedColNamesToRealColNames, REQUIRED_COLUMNS);
+    if (!mappedRecord) {
+      throw new Error("Please map all required columns first.");
     }
-    return null;
+    if (mappedRecord.id == currentRecordID) {
+      // Guard against undesirable Grist behaviour where sometimes the
+      // 'on record' event gets fired twice for the same record.
+      console.log(`autoaction: Not running onRecord() twice for the same record (ID ${mappedRecord.id})`);
+      return;
+    }
+    currentRecordID = mappedRecord.id;
+    console.log("mappedRecord", JSON.stringify(mappedRecord, null, 2));
+    if (mappedRecord.doFetch) {
+      console.log("doFetch:", JSON.stringify(mappedRecord, null, 2));
+      table.update({ id: currentRecordID, fields: { doFetch: false} });
+    }
+  } catch (err) {
+    handleError(err);
   }
 }
 
-// Subscribe to grist data
-grist.ready({requiredAccess: 'full', columns: [{name: 'Content', type: 'Text'}]});
-grist.onRecord(function (record, mappings) {
-  // If this is a new record, or mapping is diffrent.
-  if (id !== record.id || mappings?.Content !== column) {
-    id = record.id;
-    column = mappings?.Content;
-    const mapped = grist.mapColumnNames(record);
-    if (!mapped) {
-      // Log but don't bother user - maybe we are just testing.
-      console.error('Please map columns');
-    } else if (lastContent !== mapped.Content) {
-      // We will remember last thing sent, to not remove progress.
-      const content = safeParse(mapped.Content);
-      lastContent = JSON.stringify(content);
-      quill.setContents(content);
-    }
+async function sendRequest(mappedRecord) {
+  const { request } = mappedRecord;
+  const { url, options, body, parameters } = request;
+  options.method = options.body && !parameters ? "POST" : "GET";
+  try {
+    const response = await fetch(url, options);
+    const body = await response.text();
+    console.log("response body:", body);
+  } catch (err) {
+    handleError(err);
   }
-});
+}
 
-// Create a change event.
-const textChanged = new Subject();
-quill.on('text-change', () => textChanged.next(null));
-// Debounce the save event, to not save more often than once every 500 ms.
-const saveEvent = textChanged.pipe(debounceTime(500));
-const table = grist.getTable();
-saveEvent.subscribe(() => {
-  // If we are in a middle of saving, skip this.
-  if (lastSave) { return; }
-  // If we are mapped.
-  if (column) {
-    const content = quill.getContents();
-    // Store content as json.
-    const newContent = JSON.stringify(content);
-    // Don't send what we just received.
-    if (newContent === lastContent) {
-      return;
+function mapGristRecord(record, colMap, requiredTruthyCols) {
+  //const mappedRecord = grist.mapColumnNames(record);
+  // Unfortunately, Grist's mapColumnNames function doesn't handle optional column mappings
+  // properly, so we need to map stuff ourselves.
+  const mappedRecord = { id: record.id };
+  if (colMap) {
+    for (const[mappedColName, realColName] of Object.entries(colMap)) {
+      if (realColName in record) {
+        mappedRecord[mappedColName] = record[realColName];
+      }
     }
-    lastContent = newContent;
-    lastSave = table.update({id, fields: {
-      [column]: lastContent,
-    }}).finally(() => lastSave = null);
   }
-});
+  return mappedRecord;
+}
+
+
+function setStatus(msg) {
+  let statusElem = document.querySelector("#status");
+  if (!statusElem) return false;
+  statusElem.innerHTML = msg;
+  setVisible("#status", true);
+  return true;
+}
+
+function setVisible(querySelector, isVisible) {
+  let elem = document.querySelector(querySelector);
+  if (!elem) return false;
+  elem.style.display = isVisible ? "block" : "none";
+}
+
+function handleError(err) {
+  if (!setStatus(err)) {
+    console.error("autoaction: FATAL: ", err);
+    document.body.innerHTML = String(err);
+    return;
+  }
+  console.error("autoaction: ", err);
+}
+
+function ready(fn) {
+  if (document.readyState !== "loading") {
+    fn();
+  } else {
+    document.addEventListener("DOMContentLoaded", fn);
+  }
+}

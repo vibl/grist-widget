@@ -1,4 +1,5 @@
 let currentRecordID = null;
+let table;
 const REQUIRED_COLUMNS = ["request", "doFetch", "response"];
 
 ready(function(){
@@ -14,14 +15,18 @@ ready(function(){
       { name: "response", type: "Text", strictType: true, title: "Response", description: "Receives response body" },
     ],
   });
+  table = grist.getTable();
   grist.onRecord(onRecord);
   console.log("Fetcher: Ready.");
 });
 
 async function onRecord(record, mappedColNamesToRealColNames) {
-  console.log("onRecord", JSON.stringify(record, null, 2))
-  try {
-    const mappedRecord = mapGristRecord(record, mappedColNamesToRealColNames, REQUIRED_COLUMNS);
+  console.log("onRecord", JSON.stringify(record, null, 2));
+  if(record.doFetch) {
+    table.update({ doFetch: false });
+  }
+    try {
+      const mappedRecord = mapGristRecord(record, mappedColNamesToRealColNames, REQUIRED_COLUMNS);
     if (!mappedRecord) {
       throw new Error("Please map all required columns first.");
     }
