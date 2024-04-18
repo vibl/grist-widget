@@ -9,9 +9,9 @@ ready(function(){
   grist.ready({
     requiredAccess: "full",
     columns: [
-      { name: "request", type: "Any", strictType: true, title: "Request", description: "Request options: url, options, parameters" },
+      { name: "request", type: "Text", strictType: true, title: "Request", description: "Request options: url, options, parameters" },
       { name: "doFetch", type: "Bool", title: "Send", description: "Fetch now" },
-      { name: "response", type: "Any", strictType: true, title: "Response", description: "Receives response body" },
+      { name: "response", type: "Text", strictType: true, title: "Response", description: "Receives response body" },
     ],
   });
   grist.onRecord(onRecord);
