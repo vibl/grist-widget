@@ -48,7 +48,8 @@ async function onRecord(record, mappedColNamesToRealColNames) {
       throw new Error("Please map all required columns first.");
     }
     console.log("mappedRecord:", JSON.stringify(mappedRecord, null, 2));
-    if (record.doFetch) {
+    if (mappedRecord.doFetch) {
+      console.log("doFetch is true");
       table.update({ id: record.id, fields: { doFetch: false } });
     }
   } catch (err) {
@@ -82,20 +83,6 @@ function mapGristRecord(record, colMap, requiredTruthyCols) {
     }
   }
   return mappedRecord;
-}
-
-function setStatus(msg) {
-  let statusElem = document.querySelector("#status");
-  if (!statusElem) return false;
-  statusElem.innerHTML = msg;
-  setVisible("#status", true);
-  return true;
-}
-
-function setVisible(querySelector, isVisible) {
-  let elem = document.querySelector(querySelector);
-  if (!elem) return false;
-  elem.style.display = isVisible ? "block" : "none";
 }
 
 function handleError(err) {
