@@ -77,7 +77,7 @@ async function transformResults(results, jsonataPattern) {
 async function insertRowsIntoOutputTable(tableId, output) {
   console.log('output:', output)
   const outputTable = grist.getTable(tableId);
-  await outputTable.upsert(output.map(row => ({ fields: row })));
+  await outputTable.insert(output.map(row => ({ fields: row })));
 }
 
 function mapGristRecord(record, colMap, requiredTruthyCols) {
