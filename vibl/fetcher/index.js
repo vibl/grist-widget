@@ -37,19 +37,20 @@ ready(function () {
   console.log("Fetcher: Ready.");
 });
 
-async function onRecord(record, mappedColNamesToRealColNames) {
+async function onRecord(rawRecord, mappedColNamesToRealColNames) {
   try {
-    const mappedRecord = mapGristRecord(
-      record,
+    const record = mapGristRecord(
+      rawRecord,
       mappedColNamesToRealColNames,
       REQUIRED_COLUMNS
     );
-    if (!mappedRecord) {
+    if (!record) {
       throw new Error("Please map all required columns first.");
     }
-    console.log("mappedRecord:", JSON.stringify(mappedRecord, null, 2));
-    if (mappedRecord.doFetch) {
+    console.log("mappedRecord:", JSON.stringify(record, null, 2));
+    if (record.doFetch) {
       console.log("doFetch is true");
+      await sendRequest(record);
       table.update({ id: record.id, fields: { doFetch: false } });
     }
   } catch (err) {
