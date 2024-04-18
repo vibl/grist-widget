@@ -42,9 +42,8 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
     if (!record) {
       throw new Error("Please map all required columns first.");
     }
-    console.log("mappedRecord:", JSON.stringify(record, null, 2));
     if (record.doFetch) {
-      console.log("doFetch is true");
+      console.log("doFetch:", JSON.stringify(record, null, 2));
       await sendRequest(record);
       table.update({ id: record.id, fields: { doFetch: false } });
     }
@@ -55,7 +54,9 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
 
 async function sendRequest(record) {
   const { request } = record;
-  const { url, options, parameters } = request;
+  console.log('request:', request)
+  const { url, options: optionsStr, parameters } = request;
+  const options = JSON.parse(optionsStr);
   options.method = options.body && !parameters ? "POST" : "GET";
   const paramStr = URLSearchParams(parameters).toString();
   const completeURL = url + paramStr; // url should end with "/" for this to work!
