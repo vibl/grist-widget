@@ -10,7 +10,7 @@ ready(function () {
         type: "Text",
         strictType: true,
         title: "Config",
-        description: "Config for request (url, options, parameters) and output (tableName and jsonataPattern)",
+        description: "Config for request (url, options, parameters) and output (tableId and jsonataPattern)",
       },
       {
         name: "send",
@@ -44,14 +44,13 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
     }
     if (record.send) {
       const { id, config } = record;
-      const { request, output: { tableName, jsonataPattern } } = JSON.parse(config);
+      const { request, output: { tableId, jsonataPattern } } = JSON.parse(config);
       const results = await sendRequest(request);
       const output = await transformResults(results, jsonataPattern);
       const outputStr = JSON.stringify(output, null, 2);
-      table.update({ id, fields: { output: outputStr } });
-      console.log('Results output:', output);
-      insertToOutputTable(tableName, output);
-      table.update({ id, fields: { send: false } });
+      await table.update({ id, fields: { output: outputStr } });
+      await insertRowsIntoOutputTable(tableId, output);
+      await table.update({ id, fields: { send: false } });
     }
   } catch (err) {
     handleError(err);
@@ -75,9 +74,9 @@ async function transformResults(results, jsonataPattern) {
   return jsonata(jsonataPattern).evaluate(results);
 }
 
-function insertToOutputTable(tableName, output) {
-  const outputTable = grist.getTable(tableName);
-  outputTable.upsert(output);
+async function insertRowsIntoOutputTable(tableId, output) {
+  const outputTable = grist.getTable(tableId);
+  await outputTable.upsert(output.map(row => ({ fields: row })));
 }
 
 function mapGristRecord(record, colMap, requiredTruthyCols) {
