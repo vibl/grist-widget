@@ -58,7 +58,7 @@ async function sendRequest(record) {
   const { url, options, parameters } = JSON.parse(request);
   options.method = options?.body && !parameters ? "POST" : "GET";
   const parametersStr = (new URLSearchParams(parameters)).toString();
-  const completeURL = url + parametersStr; // url should end with "/" for this to work!
+  const completeURL = `${url}?${parametersStr}`; // url should end with "/" for this to work!
   console.log('completeURL:', completeURL);
   console.log('options:', options);
   try {
