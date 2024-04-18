@@ -43,16 +43,14 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
       throw new Error("Please map all required columns first.");
     }
     if (record.send) {
-      const id = record.id;
-      console.log("send:", JSON.stringify(record, null, 2));
-      const results = await sendRequest(record);
-      const resultsStr = JSON.stringify(results, null, 2);
-      console.log("request results:", resultsStr);
-      table.update({ id, fields: { response: resultsStr } });  
-      const output = processResults(results, record.output.tableName, record.output.jsonataPattern);
+      const { id, config } = record;
+      const { request, output: { tableName, jsonataPattern } } = JSON.parse(config);
+      const results = await sendRequest(request);
+      const output = processResults(results, jsonataPattern);
       const outputStr = JSON.stringify(output, null, 2);
       table.update({ id, fields: { output: outputStr } });
-      console.log('Results output:', output)
+      console.log('Results output:', output);
+      grist.
       table.update({ id, fields: { send: false } });
     }
   } catch (err) {
@@ -60,8 +58,8 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
   }
 }
 
-async function sendRequest(record) {
-  const { request: { url, options, parameters }, output: { tableName, jsonataPattern } } = JSON.parse(record.config);
+async function sendRequest(request) {
+  const { url, options, parameters } = request;
   options.method = options?.body && !parameters ? "POST" : "GET";
   const parametersStr = (new URLSearchParams(parameters)).toString();
   const completeURL = `${url}?${parametersStr}`; // url should end with "/" for this to work!
@@ -73,7 +71,7 @@ async function sendRequest(record) {
   }
 }
 
-function processResults(results, tableName, jsonataPattern) {
+function processResults(results, jsonataPattern) {
   const jsonata = JSONata(jsonataPattern);
   const processedResults = jsonata.evaluate(results);
   return processedResults;
