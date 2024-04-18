@@ -13,7 +13,7 @@ ready(function () {
         description: "Request options: url, options, parameters",
       },
       {
-        name: "doFetch",
+        name: "send",
         type: "Bool",
         title: "Send",
         description: "Fetch now",
@@ -37,15 +37,15 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
     const record = mapGristRecord(
       rawRecord,
       mappedColNamesToRealColNames,
-      ["request", "doFetch", "response"]
+      ["request", "send", "response"]
     );
     if (!record) {
       throw new Error("Please map all required columns first.");
     }
-    if (record.doFetch) {
-      console.log("doFetch:", JSON.stringify(record, null, 2));
+    if (record.send) {
+      console.log("send:", JSON.stringify(record, null, 2));
       await sendRequest(record);
-      table.update({ id: record.id, fields: { doFetch: false } });
+      table.update({ id: record.id, fields: { send: false } });
     }
   } catch (err) {
     handleError(err);
