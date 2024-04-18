@@ -46,11 +46,11 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
       const { id, config } = record;
       const { request, output: { tableName, jsonataPattern } } = JSON.parse(config);
       const results = await sendRequest(request);
-      const output = processResults(results, jsonataPattern);
+      const output = transformResults(results, jsonataPattern);
       const outputStr = JSON.stringify(output, null, 2);
       table.update({ id, fields: { output: outputStr } });
       console.log('Results output:', output);
-      grist.
+      insertToOutputTable(tableName, output);
       table.update({ id, fields: { send: false } });
     }
   } catch (err) {
@@ -71,10 +71,15 @@ async function sendRequest(request) {
   }
 }
 
-function processResults(results, jsonataPattern) {
+function transformResults(results, jsonataPattern) {
   const jsonata = JSONata(jsonataPattern);
   const processedResults = jsonata.evaluate(results);
   return processedResults;
+}
+
+function insertToOutputTable(tableName, output) {
+  const outputTable = grist.getTable(tableName);
+  outputTable.upsert(output);
 }
 
 function mapGristRecord(record, colMap, requiredTruthyCols) {
