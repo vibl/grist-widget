@@ -47,10 +47,9 @@ async function onRecord(record, mappedColNamesToRealColNames) {
     if (!mappedRecord) {
       throw new Error("Please map all required columns first.");
     }
-    currentRecordID = mappedRecord.id;
     console.log("mappedRecord:", JSON.stringify(mappedRecord, null, 2));
     if (record.doFetch) {
-      table.update({ doFetch: false });
+      table.update({ id: record.id, fields: { doFetch: false } });
     }
   } catch (err) {
     handleError(err);
