@@ -2,17 +2,34 @@ let currentRecordID = null;
 let table;
 const REQUIRED_COLUMNS = ["request", "doFetch", "response"];
 
-ready(function(){
+ready(function () {
   // Set up a global error handler.
-  window.addEventListener("error", function(err) {
+  window.addEventListener("error", function (err) {
     handleError(err);
   });
   grist.ready({
     requiredAccess: "full",
     columns: [
-      { name: "request", type: "Text", strictType: true, title: "Request", description: "Request options: url, options, parameters" },
-      { name: "doFetch", type: "Bool", title: "Send", description: "Fetch now" },
-      { name: "response", type: "Text", strictType: true, title: "Response", description: "Receives response body" },
+      {
+        name: "request",
+        type: "Text",
+        strictType: true,
+        title: "Request",
+        description: "Request options: url, options, parameters",
+      },
+      {
+        name: "doFetch",
+        type: "Bool",
+        title: "Send",
+        description: "Fetch now",
+      },
+      {
+        name: "response",
+        type: "Text",
+        strictType: true,
+        title: "Response",
+        description: "Receives response body",
+      },
     ],
   });
   table = grist.getTable();
@@ -21,21 +38,18 @@ ready(function(){
 });
 
 async function onRecord(record, mappedColNamesToRealColNames) {
-
-    try {
-      const mappedRecord = mapGristRecord(record, mappedColNamesToRealColNames, REQUIRED_COLUMNS);
+  try {
+    const mappedRecord = mapGristRecord(
+      record,
+      mappedColNamesToRealColNames,
+      REQUIRED_COLUMNS
+    );
     if (!mappedRecord) {
       throw new Error("Please map all required columns first.");
     }
-    if (mappedRecord.id == currentRecordID) {
-      // Guard against undesirable Grist behaviour where sometimes the
-      // 'on record' event gets fired twice for the same record.
-      console.log(`autoaction: Not running onRecord() twice for the same record (ID ${mappedRecord.id})`);
-      return;
-    }
     currentRecordID = mappedRecord.id;
     console.log("mappedRecord:", JSON.stringify(mappedRecord, null, 2));
-    if(record.doFetch) {
+    if (record.doFetch) {
       table.update({ doFetch: false });
     }
   } catch (err) {
@@ -62,7 +76,7 @@ function mapGristRecord(record, colMap, requiredTruthyCols) {
   // properly, so we need to map stuff ourselves.
   const mappedRecord = { id: record.id };
   if (colMap) {
-    for (const[mappedColName, realColName] of Object.entries(colMap)) {
+    for (const [mappedColName, realColName] of Object.entries(colMap)) {
       if (realColName in record) {
         mappedRecord[mappedColName] = record[realColName];
       }
@@ -70,7 +84,6 @@ function mapGristRecord(record, colMap, requiredTruthyCols) {
   }
   return mappedRecord;
 }
-
 
 function setStatus(msg) {
   let statusElem = document.querySelector("#status");
