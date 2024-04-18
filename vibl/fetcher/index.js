@@ -58,16 +58,20 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
   }
 }
 
-async function sendRequest(mappedRecord) {
-  const { request } = mappedRecord;
-  const { url, options, body, parameters } = request;
+async function sendRequest(record) {
+  const { request } = record;
+  const { url, options, parameters } = request;
   options.method = options.body && !parameters ? "POST" : "GET";
+  const paramStr = URLSearchParams(parameters).toString();
+  const completeURL = url + paramStr; // url should end with "/" for this to work!
+  console.log('completeURL:', completeURL);
+  console.log('options:', options);
   try {
-    const response = await fetch(url, options);
+    const response = await fetch(completeURL, options);
     const body = await response.text();
     console.log("response body:", body);
   } catch (err) {
-    handleError(err);
+    console.error("Fetcher error:", err);
   }
 }
 
@@ -84,15 +88,6 @@ function mapGristRecord(record, colMap, requiredTruthyCols) {
     }
   }
   return mappedRecord;
-}
-
-function handleError(err) {
-  if (!setStatus(err)) {
-    console.error("autoaction: FATAL: ", err);
-    document.body.innerHTML = String(err);
-    return;
-  }
-  console.error("autoaction: ", err);
 }
 
 function ready(fn) {
