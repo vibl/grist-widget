@@ -1,12 +1,7 @@
 let currentRecordID = null;
 let table;
-const REQUIRED_COLUMNS = ["request", "doFetch", "response"];
 
 ready(function () {
-  // Set up a global error handler.
-  window.addEventListener("error", function (err) {
-    handleError(err);
-  });
   grist.ready({
     requiredAccess: "full",
     columns: [
@@ -42,7 +37,7 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
     const record = mapGristRecord(
       rawRecord,
       mappedColNamesToRealColNames,
-      REQUIRED_COLUMNS
+      ["request", "doFetch", "response"]
     );
     if (!record) {
       throw new Error("Please map all required columns first.");
@@ -71,7 +66,7 @@ async function sendRequest(record) {
     const body = await response.text();
     console.log("response body:", body);
   } catch (err) {
-    console.error("Fetcher error:", err);
+    handleError(err);
   }
 }
 
@@ -88,6 +83,10 @@ function mapGristRecord(record, colMap, requiredTruthyCols) {
     }
   }
   return mappedRecord;
+}
+
+function handleError(err) {
+  console.error("Fetcher error:", err);
 }
 
 function ready(fn) {
