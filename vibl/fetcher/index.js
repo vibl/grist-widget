@@ -21,10 +21,7 @@ ready(function(){
 });
 
 async function onRecord(record, mappedColNamesToRealColNames) {
-  console.log("onRecord", JSON.stringify(record, null, 2));
-  if(record.doFetch) {
-    table.update({ doFetch: false });
-  }
+
     try {
       const mappedRecord = mapGristRecord(record, mappedColNamesToRealColNames, REQUIRED_COLUMNS);
     if (!mappedRecord) {
@@ -38,7 +35,9 @@ async function onRecord(record, mappedColNamesToRealColNames) {
     }
     currentRecordID = mappedRecord.id;
     console.log("mappedRecord:", JSON.stringify(mappedRecord, null, 2));
-    
+    if(record.doFetch) {
+      table.update({ doFetch: false });
+    }
   } catch (err) {
     handleError(err);
   }
