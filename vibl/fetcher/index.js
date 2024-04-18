@@ -46,7 +46,7 @@ async function onRecord(rawRecord, mappedColNamesToRealColNames) {
       const { id, config } = record;
       const { request, output: { tableName, jsonataPattern } } = JSON.parse(config);
       const results = await sendRequest(request);
-      const output = transformResults(results, jsonataPattern);
+      const output = await transformResults(results, jsonataPattern);
       const outputStr = JSON.stringify(output, null, 2);
       table.update({ id, fields: { output: outputStr } });
       console.log('Results output:', output);
@@ -71,10 +71,8 @@ async function sendRequest(request) {
   }
 }
 
-function transformResults(results, jsonataPattern) {
-  const jsonata = JSONata(jsonataPattern);
-  const processedResults = jsonata.evaluate(results);
-  return processedResults;
+async function transformResults(results, jsonataPattern) {
+  return jsonata(jsonataPattern).evaluate(results);
 }
 
 function insertToOutputTable(tableName, output) {
