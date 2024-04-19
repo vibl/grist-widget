@@ -1,4 +1,4 @@
-let isNewRecord = false;
+let isNewRecord = true; // TODO: change to false
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -14,7 +14,7 @@ ready(function () {
   grist.ready({
     requiredAccess: "full",
   });
-  grist.onNewRecord(setIsNewRecord);
+  // grist.onNewRecord(setIsNewRecord);
   grist.onRecord(onRecord);
   // console.log("Fetcher: Ready.");
 });
@@ -29,6 +29,8 @@ async function onRecord(record) {
       query_endpoint_output_jsonata
     } = record;
     requestsTable = grist.getTable();
+    const endpoints = grist.docApi.fetchTable("endpoints");
+    console.log('endpoints:', endpoints)
     const selectedRecord = await grist.fetchSelectedRecord(id);
     console.log('selectedRecord:', selectedRecord)
     // const id = requestsTable.create({ fields: {  } });
