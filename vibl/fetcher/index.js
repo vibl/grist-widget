@@ -123,17 +123,16 @@ async function transformResults(jsonataPattern, results) {
   return jsonata(jsonataPattern).evaluate(results);
 }
 
-function removeDuplicates(incoming, existing, includedProps, excludedProps = []) {
+function removeDuplicates(incoming, existing, includedKeys, excludedKeys = []) {
   return incoming.filter(
-    (row) =>
-      !existing.some((outputRow) =>
-        Object.keys(row).every(
-          (key) =>
-            excludedProps.includes(key) ||
-            ((!includedProps || includedProps.includes(key)) &&
-              row[key] === outputRow[key])
-        )
-      )
+    (incomingRow) => !existing.some(
+      (existingRow) => {
+        const propsToCheck = includedKeys || Object.keys(incomingRow).filter(key => !excludedKeys.includes(key));
+        return propsToCheck.every(
+          (prop) => excludedKeys.includes(prop) ||incomingRow[prop] === existingRow[prop]
+        );
+      }
+    )
   );
 }
 
