@@ -10,6 +10,23 @@ async function setIsNewRecord() {
   isNewRecord = false;
 }
 
+function transpose(data) {
+  const keys = Object.keys(data);
+  const result = [];
+
+  // Assuming all arrays are of the same length
+  const length = data[keys[0]].length;
+  
+  for (let i = 0; i < length; i++) {
+      let obj = {};
+      keys.forEach(key => {
+          obj[key] = data[key][i];
+      });
+      result.push(obj);
+  }
+  return result;
+}
+
 ready(function () {
   grist.ready({
     requiredAccess: "full",
@@ -29,14 +46,10 @@ async function onRecord(record) {
       query_endpoint_output_jsonata
     } = record;
     requestsTable = grist.getTable();
-    const endpoints = await grist.docApi.fetchTable("Endpoint");
+    const endpoints = transpose(await grist.docApi.fetchTable("Endpoint"));
     console.log('endpoints:', endpoints);
-    const queries = await grist.docApi.fetchTable("Queries");
+    const queries = transpose(await grist.docApi.fetchTable("Queries"));
     console.log('queries:', queries);
-    const requests = await grist.docApi.fetchTable("Requests");
-    console.log('requests:', requests);
-    const selectedTable = await grist.fetchSelectedTable();
-    console.log('selectedTable:', selectedTable)
 
     // const id = requestsTable.create({ fields: {  } });
     const results = await sendRequest(record);
