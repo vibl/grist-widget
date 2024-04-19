@@ -57,8 +57,13 @@ ready(function () {
 });
 
 async function onRecord(request) {
-  if (!isNewRecord) return;
+  console.log('request:', request)
+  console.log('isNewRecord:', isNewRecord)
+  console.log('currentRecordID:', currentRecordID)
+
+  if (!isNewRecord | !record.sent) return;
   if (request.id === currentRecordID) return;
+  currentRecordID = request.id;
   try {
     const { id, queryRef } = request;
     const queries = transposeAndIndex(
@@ -73,11 +78,9 @@ async function onRecord(request) {
     const endpoint = endpoints.get(query.endpoint);
     const { output_table, output_jsonata } = endpoint;
     // const id = requestsTable.create({ fields: {  } });
-    currentRecordID = request.id;
     const results = await sendRequest(endpoint, query);
     const output = await transformResults(output_jsonata, results);
     const rows = output.map((row) => ({ ...row, request: id }));
-    console.log("rows:", rows);
     await insertRowsIntoOutputTable(output_table, rows);
     requestsTable = grist.getTable();
     requestsTable.update({ id, fields: { success: true } });
@@ -138,9 +141,7 @@ function removeDuplicates(incoming, existing, includedKeys, excludedKeys = []) {
 
 async function insertRowsIntoOutputTable(tableId, rows) {
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
-  console.log("retrievedRows:", retrievedRows);
   const filteredRows = removeDuplicates(rows, retrievedRows, ["url"]);
-  console.log("filteredRows:", filteredRows);
   const preparedRows = filteredRows.map((row) => ({ fields: row }));
   const outputTable = grist.getTable(tableId);
   await outputTable.create(preparedRows);
