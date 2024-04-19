@@ -28,6 +28,12 @@ function transposeAndIndex(data, indexKey) {
   return result;
 }
 
+/* async function fetchRows(tableId) {
+  const table = grist.getTable(tableId);
+  const rows = await table.fetch();
+  return rows;
+}
+ */
 ready(function () {
   grist.ready({
     requiredAccess: "full",
@@ -40,10 +46,10 @@ ready(function () {
 async function onRecord(request) {
   if (!isNewRecord) return;
   try {
-    const { id, query_id } = request;
+    const { id, queryRef } = request;
     console.log('request:', request)
-    const queries = transposeAndIndex(await grist.docApi.fetchTable("Queries"));
-    const query = queries.get(queryRef).rowId;
+    const queries = transposeAndIndex(await grist.docApi.fetchTable(queryRef.tableId));
+    const query = queries.get(queryRef.rowId);
     console.log('query:', query)
     const endpoints = transposeAndIndex(await grist.docApi.fetchTable("Endpoint"));
     const endpoint = endpoints.get(query.endpoint);
