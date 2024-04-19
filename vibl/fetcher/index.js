@@ -123,7 +123,7 @@ async function transformResults(jsonataPattern, results) {
   return jsonata(jsonataPattern).evaluate(results);
 }
 
-function removeDuplicates(incoming, existing, includedProps, excludedProps) {
+function removeDuplicates(incoming, existing, includedProps, excludedProps = []) {
   return incoming.filter(
     (row) =>
       !existing.some((outputRow) =>
