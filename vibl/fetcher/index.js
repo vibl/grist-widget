@@ -1,5 +1,5 @@
 let isNewRecord = false;
-let currentRecordID = null;
+let currentRequestID = null;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -59,11 +59,11 @@ ready(function () {
 async function onRecord(request) {
   console.log('request:', request)
   console.log('isNewRecord:', isNewRecord)
-  console.log('currentRecordID:', currentRecordID)
+  console.log('currentRecordID:', currentRequestID)
 
-  if (!isNewRecord || !record.sent) return;
-  if (request.id === currentRecordID) return;
-  currentRecordID = request.id;
+  if (!isNewRecord || !request.sent) return;
+  if (request.id === currentRequestID) return;
+  currentRequestID = request.id;
   try {
     const { id, queryRef } = request;
     const queries = transposeAndIndex(
