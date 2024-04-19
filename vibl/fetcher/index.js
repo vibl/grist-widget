@@ -95,8 +95,8 @@ async function sendRequest(endpoint, query) {
   }
 }
 
-async function transformResults(jsonata, results) {
-  return jsonata(jsonata).evaluate(results);
+async function transformResults(jsonataPattern, results) {
+  return jsonata(jsonataPattern).evaluate(results);
 }
 
 async function insertRowsIntoOutputTable(tableId, output) {
