@@ -1,16 +1,24 @@
+let isNewRecord = false;
+
 ready(function () {
   grist.ready({
     requiredAccess: "full",
   });
-  grist.onNewRecord(onNewRecord);
+  grist.onNewRecord(() => isNewRecord = true);
+  grist.onRecord(onRecord);
   // console.log("Fetcher: Ready.");
 });
 
-async function onNewRecord(record) {
+async function onRecord(record) {
+  if (isNewRecord) {
+    isNewRecord = false;
+  } else {
+    return;
+  }
   console.log('record:', record);
   try {
     requestsTable = grist.getTable();
-    const id = requestsTable.create({ fields: {  } });
+    // const id = requestsTable.create({ fields: {  } });
     const {
       query_endpoint_output_table,
       query_endpoint_output_jsonata
