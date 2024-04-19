@@ -53,7 +53,7 @@ async function onRecord(request) {
     const endpoint = endpoints.get(query.endpoint);
     const { output_table, output_jsonata } = endpoint;
     // const id = requestsTable.create({ fields: {  } });
-    const results = await sendRequest(endpoint, request);
+    const results = await sendRequest(endpoint, query);
     const output = await transformResults(output_jsonata, results);
     await insertRowsIntoOutputTable(output_table, output);
     requestsTable = grist.getTable();
@@ -63,7 +63,7 @@ async function onRecord(request) {
   }
 }
 
-async function sendRequest(endpoint, request) {
+async function sendRequest(endpoint, query) {
   const {
     body: endpointBodyStr,
     body_jsonata: bodyJsonata,
@@ -76,12 +76,12 @@ async function sendRequest(endpoint, request) {
   if (endpointBodyStr) {
     options.method = "POST";
     const endpointBody = JSON.parse(endpointBodyStr);
-    const queryBody = await jsonata(bodyJsonata).evaluate(request);
+    const queryBody = await jsonata(bodyJsonata).evaluate(query);
     options.body = { ...endpointBody, ...queryBody };
   } else {
     options.method = "GET";
     const endpointParams = JSON.parse(endpointParamsStr);
-    const queryParams = await jsonata(paramsJsonata).evaluate(request);
+    const queryParams = await jsonata(paramsJsonata).evaluate(query);
     const params = { ...endpointParams, ...queryParams };
     const queryString = new URLSearchParams(params).toString();
     url = `${query_endpoint_url}?${queryString}`; // url should end with "/" for this to work!
