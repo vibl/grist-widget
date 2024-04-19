@@ -1,4 +1,5 @@
 let isNewRecord = false;
+let currentRecordID = null;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -45,6 +46,8 @@ ready(function () {
 
 async function onRecord(request) {
   if (!isNewRecord) return;
+  if (request.id === currentRecordID) return;
+  currentRecordID = request.id;
   try {
     const { id, queryRef } = request;
     const queries = transposeAndIndex("id",await grist.docApi.fetchTable(queryRef.tableId));
