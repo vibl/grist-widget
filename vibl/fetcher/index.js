@@ -45,6 +45,7 @@ ready(function () {
 });
 
 async function onRecord(request) {
+  console.log('request:', request)
   if (!isNewRecord) return;
   if (request.id === currentRecordID) return;
   currentRecordID = request.id;
