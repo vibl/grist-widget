@@ -6,7 +6,7 @@ function sleep(ms) {
 
 async function setIsNewRecord() {
   isNewRecord = true;
-  sleep(1000);
+  await sleep(1000);
   isNewRecord = false;
 }
 
