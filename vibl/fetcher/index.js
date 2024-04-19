@@ -129,6 +129,7 @@ function removeDuplicates(incoming, existing, includedKeys, excludedKeys = []) {
 }
 
 async function insertRowsIntoOutputTable(tableId, rows) {
+  console.log('rows:', rows)
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
   const filteredRows = removeDuplicates(rows, retrievedRows, ["url"]);
   console.log('filteredRows:', filteredRows)
