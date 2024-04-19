@@ -10,7 +10,7 @@ async function setIsNewRecord() {
   isNewRecord = false;
 }
 
-function transposeAndIndex(data, indexKey) {
+function transposeAndIndex(indexKey, data) {
   const keys = Object.keys(data);
   const result = new Map();
 
@@ -50,11 +50,11 @@ async function onRecord(request) {
     console.log('request:', request)
     console.log('queryRef.tableId:', queryRef.tableId)
 
-    const queries = transposeAndIndex(await grist.docApi.fetchTable(queryRef.tableId));
+    const queries = transposeAndIndex("id",await grist.docApi.fetchTable(queryRef.tableId));
     console.log('queries:', queries);
     const query = queries.get(queryRef.rowId);
     console.log('query:', query)
-    const endpoints = transposeAndIndex(await grist.docApi.fetchTable("Endpoint"));
+    const endpoints = transposeAndIndex("id", await grist.docApi.fetchTable("Endpoint"));
     const endpoint = endpoints.get(query.endpoint);
     console.log('endpoint:', endpoint)
     const { output_table, output_jsonata } = endpoint;
