@@ -38,15 +38,9 @@ function indexBy(indexKey, data) {
 }
 
 function transposeAndIndex(indexKey, data) {
-  return indexBy(indexKey, transpose(result));
+  return indexBy(indexKey, transpose(data));
 }
 
-/* async function fetchRows(tableId) {
-  const table = grist.getTable(tableId);
-  const rows = await table.fetch();
-  return rows;
-}
- */
 ready(function () {
   grist.ready({
     requiredAccess: "full",
