@@ -50,10 +50,11 @@ ready(function () {
 });
 
 async function onRecord(query) {
-  console.log('query:', query)
   if (!query.send) return;
-  if (query.id === currentQueryID) return;
-  currentQueryID = query.id;
+  console.log('query:', query)
+
+/*   if (query.id === currentQueryID) return;
+  currentQueryID = query.id; */
   try {
     const { id } = query;
     const queriesTable = grist.getTable();
