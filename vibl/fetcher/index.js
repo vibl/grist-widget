@@ -1,13 +1,13 @@
-let isNewRecord = false;
+let handleOnRecord = () => {};
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function waitForNewRecord() {
-  grist.onRecord(onRecord);
+  handleOnRecord = onRecord;
   sleep(1000);
-  grist.onRecord(() => {});
+  handleOnRecord = () => {};
 }
 
 ready(function () {
@@ -15,6 +15,7 @@ ready(function () {
     requiredAccess: "full",
   });
   grist.onNewRecord(waitForNewRecord);
+  grist.onRecord(handleOnRecord);
   // console.log("Fetcher: Ready.");
 });
 
