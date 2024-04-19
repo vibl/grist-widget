@@ -9,15 +9,15 @@ ready(function () {
 async function onNewRecord(record) {
   console.log('record:', record);
   try {
+    requestsTable = grist.getTable();
+    const id = requestsTable.create({ fields: {  } });
     const {
-      id,
       query_endpoint_output_table,
       query_endpoint_output_jsonata
     } = record;
     const results = await sendRequest(record);
     const output = await transformResults(query_endpoint_output_jsonata, results);
     await insertRowsIntoOutputTable(query_endpoint_output_table, output);
-    requestsTable = grist.getTable();
     requestsTable.update({ id, fields: { success: true } });
   } catch (err) {
     handleError(err);
