@@ -49,7 +49,7 @@ async function onRecord(request) {
   if (!isNewRecord) return;
   if (request.id === currentRecordID) return;
   try {
-    const { id, queryRef, sent_at } = request;
+    const { id, queryRef } = request;
     const queries = transposeAndIndex("id",await grist.docApi.fetchTable(queryRef.tableId));
     const query = queries.get(queryRef.rowId);
     const endpoints = transposeAndIndex("id", await grist.docApi.fetchTable("Endpoint"));
@@ -59,7 +59,7 @@ async function onRecord(request) {
     currentRecordID = request.id;
     const results = await sendRequest(endpoint, query);
     const output = await transformResults(output_jsonata, results);
-    const rows = output.map((row) => ({ ...row, sent_at }));
+    const rows = output.map((row) => ({ ...row, request: id }));
     await insertRowsIntoOutputTable(output_table, rows);
     requestsTable = grist.getTable();
     requestsTable.update({ id, fields: { success: true } });
