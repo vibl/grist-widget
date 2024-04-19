@@ -86,17 +86,13 @@ async function sendRequest(endpoint, query) {
   } else {
     options.method = "GET";
     const endpointParams = JSON.parse(endpointParamsStr);
-    console.log('paramsJsonata:', paramsJsonata)
-    console.log('query:', query)
     const queryParams = await jsonata(paramsJsonata).evaluate(query);
-    console.log('queryParams:', queryParams)
     const params = { ...endpointParams, ...queryParams };
-    console.log('params:', params)
     const queryString = new URLSearchParams(params).toString();
-    console.log('queryString:', queryString)
     url = `${endpointUrl}?${queryString}`; // url should end with "/" for this to work!
   }
   try {
+    console.log('url:', url)
     const response = await fetch(url, options);
     return response.json();
   } catch (err) {
@@ -109,8 +105,10 @@ async function transformResults(jsonataPattern, results) {
 }
 
 async function insertRowsIntoOutputTable(tableId, output) {
+  console.log('output:', output)
   const outputTable = grist.getTable(tableId);
   const rows = output.map((row) => ({ fields: row }));
+  console.log('rows:', rows)
   await outputTable.create(rows);
 }
 
