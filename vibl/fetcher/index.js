@@ -15,7 +15,7 @@ ready(function () {
     requiredAccess: "full",
   });
   grist.onNewRecord(waitForNewRecord);
-  grist.onRecord(handleOnRecord);
+  grist.onRecord(() => handleOnRecord());
   // console.log("Fetcher: Ready.");
 });
 
