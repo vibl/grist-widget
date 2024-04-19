@@ -17,12 +17,15 @@ async function onRecord(record) {
   }
   console.log('record:', record);
   try {
-    requestsTable = grist.getTable();
-    // const id = requestsTable.create({ fields: {  } });
     const {
+      id,
       query_endpoint_output_table,
       query_endpoint_output_jsonata
     } = record;
+    requestsTable = grist.getTable();
+    const selectedRecord = grist.fetchSelectedRecord(id);
+    console.log('selectedRecord:', selectedRecord)
+    // const id = requestsTable.create({ fields: {  } });
     const results = await sendRequest(record);
     const output = await transformResults(query_endpoint_output_jsonata, results);
     await insertRowsIntoOutputTable(query_endpoint_output_table, output);
