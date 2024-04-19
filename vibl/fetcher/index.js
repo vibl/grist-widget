@@ -117,10 +117,10 @@ async function transformResults(jsonataPattern, results) {
   return jsonata(jsonataPattern).evaluate(results);
 }
 
-function removeDuplicates(incoming, existing, removedProps) {
+function removeDuplicates(incoming, existing, excludedProps) {
   return incoming.filter(row => 
     !existing.some(outputRow => 
-      Object.keys(row).every(key => removedProps.includes(key) || row[key] === outputRow[key])
+      Object.keys(row).every(key => excludedProps.includes(key) || row[key] === outputRow[key])
     )
   );
 }
@@ -128,7 +128,7 @@ function removeDuplicates(incoming, existing, removedProps) {
 async function insertRowsIntoOutputTable(tableId, rows) {
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
   console.log('retrievedRows:', retrievedRows)
-  const filteredRows = removeDuplicates(rows, retrievedRows, removedProps);
+  const filteredRows = removeDuplicates(rows, retrievedRows, ["id", "request"]);
   console.log('filteredRows:', filteredRows)
   const preparedRows = filteredRows.map((row) => ({ fields: row }));
   const outputTable = grist.getTable(tableId);
