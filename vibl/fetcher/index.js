@@ -41,9 +41,9 @@ async function onRecord(request) {
   if (!isNewRecord) return;
   try {
     const { id, query_id } = request;
-    const queries = transpose(await grist.docApi.fetchTable("Queries"));
+    const queries = transposeAndIndex(await grist.docApi.fetchTable("Queries"));
     const query = queries.get(query_id);
-    const endpoints = transpose(await grist.docApi.fetchTable("Endpoint"));
+    const endpoints = transposeAndIndex(await grist.docApi.fetchTable("Endpoint"));
     const endpoint = endpoints.get(query.endpoint);
     const { output_table, output_jsonata } = endpoint;
     // const id = requestsTable.create({ fields: {  } });
