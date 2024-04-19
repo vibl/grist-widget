@@ -5,12 +5,6 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function setIsNewRecord() {
-  isNewRecord = true;
-  await sleep(1000);
-  isNewRecord = false;
-}
-
 function transpose(data) {
   // Find the maximum length amongst all arrays in the object
   const maxLength = Math.max(...Object.values(data).map((arr) => arr.length));
@@ -51,20 +45,17 @@ ready(function () {
   grist.ready({
     requiredAccess: "full",
   });
-  grist.onNewRecord(setIsNewRecord);
   grist.onRecord(onRecord);
   // console.log("Fetcher: Ready.");
 });
 
 async function onRecord(request) {
-  console.log('request:', request)
-  console.log('isNewRecord:', isNewRecord)
-  console.log('currentRecordID:', currentRequestID)
-
-  if (!isNewRecord || !request.sent) return;
+  if (!request.send) return;
   if (request.id === currentRequestID) return;
   currentRequestID = request.id;
   try {
+    requestsTable = grist.getTable();
+    requestsTable.update({ id, fields: { send: false } });
     const { id, queryRef } = request;
     const queries = transposeAndIndex(
       "id",
@@ -82,7 +73,6 @@ async function onRecord(request) {
     const output = await transformResults(output_jsonata, results);
     const rows = output.map((row) => ({ ...row, request: id }));
     await insertRowsIntoOutputTable(output_table, rows);
-    requestsTable = grist.getTable();
     requestsTable.update({ id, fields: { success: true } });
   } catch (err) {
     handleError(err);
