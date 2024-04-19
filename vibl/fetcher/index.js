@@ -35,6 +35,8 @@ async function onRecord(record) {
     console.log('queries:', queries);
     const requests = await grist.docApi.fetchTable("Requests");
     console.log('requests:', requests);
+    const selectedTable = await grist.fetchSelectedTable();
+    console.log('selectedTable:', selectedTable)
 
     // const id = requestsTable.create({ fields: {  } });
     const results = await sendRequest(record);
