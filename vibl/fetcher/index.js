@@ -1,5 +1,5 @@
 let isNewRecord = false;
-let currentRequestID = null;
+let currentQueryID = null;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -49,19 +49,14 @@ ready(function () {
   // console.log("Fetcher: Ready.");
 });
 
-async function onRecord(request) {
-  if (!request.send) return;
-  if (request.id === currentRequestID) return;
-  currentRequestID = request.id;
+async function onRecord(query) {
+  if (!query.send) return;
+  if (query.id === currentQueryID) return;
+  currentQueryID = query.id;
   try {
-    requestsTable = grist.getTable();
-    requestsTable.update({ id, fields: { send: false } });
-    const { id, queryRef } = request;
-    const queries = transposeAndIndex(
-      "id",
-      await grist.docApi.fetchTable(queryRef.tableId)
-    );
-    const query = queries.get(queryRef.rowId);
+    const queriesTable = grist.getTable();
+    await queriesTable.update({ id, fields: { send: false } });
+    const { id } = query;
     const endpoints = transposeAndIndex(
       "id",
       await grist.docApi.fetchTable("Endpoint")
@@ -70,10 +65,12 @@ async function onRecord(request) {
     const { output_table, output_jsonata } = endpoint;
     // const id = requestsTable.create({ fields: {  } });
     const results = await sendRequest(endpoint, query);
+    const requestsTable = grist.getTable("requests");
+    const requestId = await requestsTable.create({ fields: { success: false } });
     const output = await transformResults(output_jsonata, results);
     const rows = output.map((row) => ({ ...row, request: id }));
     await insertRowsIntoOutputTable(output_table, rows);
-    requestsTable.update({ id, fields: { success: true } });
+    await requestsTable.update({ id: requestId, fields: { success: true } });
   } catch (err) {
     handleError(err);
   }
