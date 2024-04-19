@@ -11,19 +11,25 @@ async function setIsNewRecord() {
   isNewRecord = false;
 }
 
-function transpose( data) {
-  const keys = Object.keys(data);
+function transpose(data) {
+  // Find the maximum length amongst all arrays in the object
+  const maxLength = Math.max(...Object.values(data).map(arr => arr.length));
+
+  // Build the array of transposed objects
   const result = [];
-
-  const length = data[keys[0]].length;
-
-  for (let i = 0; i < length; i++) {
-    let obj = {};
-    keys.forEach((key) => {
-      obj[key] = data[key][i];
-    });
-    result.push[obj];
+  for (let i = 0; i < maxLength; i++) {
+      let obj = {};
+      for (const key in data) {
+          // Check if there's an element at the current index
+          if (data[key][i] !== undefined) {
+              obj[key] = data[key][i];
+          }
+      }
+      if (Object.keys(obj).length > 0) {
+          result.push(obj);
+      }
   }
+
   return result;
 }
 
