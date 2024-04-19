@@ -1,4 +1,4 @@
-let isNewRecord = true; // TODO: change to false
+let isNewRecord = false;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -32,14 +32,13 @@ ready(function () {
   grist.ready({
     requiredAccess: "full",
   });
-  // grist.onNewRecord(setIsNewRecord);
+  grist.onNewRecord(setIsNewRecord);
   grist.onRecord(onRecord);
   // console.log("Fetcher: Ready.");
 });
 
 async function onRecord(request) {
   if (!isNewRecord) return;
-  console.log("record:", request);
   try {
     const { id, query_id } = request;
     const queries = transpose(await grist.docApi.fetchTable("Queries"));
