@@ -29,7 +29,7 @@ async function onRecord(record) {
       query_endpoint_output_jsonata
     } = record;
     requestsTable = grist.getTable();
-    const endpoints = grist.docApi.fetchTable("endpoint");
+    const endpoints = grist.docApi.fetchTable("Endpoint");
     console.log('endpoints:', endpoints)
     const selectedRecord = await grist.fetchSelectedRecord(id);
     console.log('selectedRecord:', selectedRecord)
