@@ -61,7 +61,7 @@ async function onRecord(request) {
   console.log('isNewRecord:', isNewRecord)
   console.log('currentRecordID:', currentRecordID)
 
-  if (!isNewRecord | !record.sent) return;
+  if (!isNewRecord || !record.sent) return;
   if (request.id === currentRecordID) return;
   currentRecordID = request.id;
   try {
