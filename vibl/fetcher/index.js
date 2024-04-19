@@ -1,21 +1,24 @@
 let isNewRecord = false;
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function waitForNewRecord() {
+  grist.onRecord(onRecord);
+  sleep(1000);
+  grist.onRecord(() => {});
+}
+
 ready(function () {
   grist.ready({
     requiredAccess: "full",
   });
-  // grist.onNewRecord(() => isNewRecord = true);
-  grist.onNewRecord(onNewRecord);
+  grist.onNewRecord(waitForNewRecord);
   // console.log("Fetcher: Ready.");
 });
 
-async function onNewRecord() {
-  const record = await grist.fetchSelectedRecord(id);
-/*   if (isNewRecord) {
-    isNewRecord = false;
-  } else {
-    return;
-  } */
+async function onRecord(record) {
   console.log('record:', record);
   try {
     const {
@@ -24,8 +27,6 @@ async function onNewRecord() {
       query_endpoint_output_jsonata
     } = record;
     requestsTable = grist.getTable();
-/*     const selectedRecord = await grist.fetchSelectedRecord(id);
-    console.log('selectedRecord:', selectedRecord) */
     // const id = requestsTable.create({ fields: {  } });
     const results = await sendRequest(record);
     const output = await transformResults(query_endpoint_output_jsonata, results);
