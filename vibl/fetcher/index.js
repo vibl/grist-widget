@@ -71,20 +71,21 @@ async function sendRequest(endpoint, query) {
     params: endpointParamsStr,
     params_jsonata: paramsJsonata,
   } = endpoint;
-  let url = endpointUrl;
+  let url;
   const options = {};
   if (endpointBodyStr) {
     options.method = "POST";
     const endpointBody = JSON.parse(endpointBodyStr);
     const queryBody = await jsonata(bodyJsonata).evaluate(query);
     options.body = { ...endpointBody, ...queryBody };
+    url = endpointUrl;
   } else {
     options.method = "GET";
     const endpointParams = JSON.parse(endpointParamsStr);
     const queryParams = await jsonata(paramsJsonata).evaluate(query);
     const params = { ...endpointParams, ...queryParams };
     const queryString = new URLSearchParams(params).toString();
-    url = `${query_endpoint_url}?${queryString}`; // url should end with "/" for this to work!
+    url = `${endpointUrl}?${queryString}`; // url should end with "/" for this to work!
   }
   try {
     const response = await fetch(url, options);
