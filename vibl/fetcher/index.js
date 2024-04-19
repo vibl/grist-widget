@@ -13,34 +13,34 @@ async function setIsNewRecord() {
 
 function transpose(data) {
   // Find the maximum length amongst all arrays in the object
-  const maxLength = Math.max(...Object.values(data).map(arr => arr.length));
+  const maxLength = Math.max(...Object.values(data).map((arr) => arr.length));
 
   // Build the array of transposed objects
   const result = [];
   for (let i = 0; i < maxLength; i++) {
-      let obj = {};
-      for (const key in data) {
-          // Check if there's an element at the current index
-          if (data[key][i] !== undefined) {
-              obj[key] = data[key][i];
-          }
+    let obj = {};
+    for (const key in data) {
+      // Check if there's an element at the current index
+      if (data[key][i] !== undefined) {
+        obj[key] = data[key][i];
       }
-      if (Object.keys(obj).length > 0) {
-          result.push(obj);
-      }
+    }
+    if (Object.keys(obj).length > 0) {
+      result.push(obj);
+    }
   }
 
   return result;
 }
 
 function indexBy(indexKey, data) {
-    const map = new Map();
-    for (const item of data) {
-        if (item.hasOwnProperty(indexKey)) {
-            map.set(item[indexKey], item);
-        }
+  const map = new Map();
+  for (const item of data) {
+    if (item.hasOwnProperty(indexKey)) {
+      map.set(item[indexKey], item);
     }
-    return map;
+  }
+  return map;
 }
 
 function transposeAndIndex(indexKey, data) {
@@ -61,9 +61,15 @@ async function onRecord(request) {
   if (request.id === currentRecordID) return;
   try {
     const { id, queryRef } = request;
-    const queries = transposeAndIndex("id",await grist.docApi.fetchTable(queryRef.tableId));
+    const queries = transposeAndIndex(
+      "id",
+      await grist.docApi.fetchTable(queryRef.tableId)
+    );
     const query = queries.get(queryRef.rowId);
-    const endpoints = transposeAndIndex("id", await grist.docApi.fetchTable("Endpoint"));
+    const endpoints = transposeAndIndex(
+      "id",
+      await grist.docApi.fetchTable("Endpoint")
+    );
     const endpoint = endpoints.get(query.endpoint);
     const { output_table, output_jsonata } = endpoint;
     // const id = requestsTable.create({ fields: {  } });
@@ -71,7 +77,7 @@ async function onRecord(request) {
     const results = await sendRequest(endpoint, query);
     const output = await transformResults(output_jsonata, results);
     const rows = output.map((row) => ({ ...row, request: id }));
-    console.log('rows:', rows)
+    console.log("rows:", rows);
     await insertRowsIntoOutputTable(output_table, rows);
     requestsTable = grist.getTable();
     requestsTable.update({ id, fields: { success: true } });
@@ -105,7 +111,7 @@ async function sendRequest(endpoint, query) {
     url = `${endpointUrl}?${queryString}`; // url should end with "/" for this to work!
   }
   try {
-    console.log('url:', url)
+    console.log("url:", url);
     const response = await fetch(url, options);
     return response.json();
   } catch (err) {
@@ -117,19 +123,25 @@ async function transformResults(jsonataPattern, results) {
   return jsonata(jsonataPattern).evaluate(results);
 }
 
-function removeDuplicates(incoming, existing, excludedProps) {
-  return incoming.filter(row => 
-    !existing.some(outputRow => 
-      Object.keys(row).every(key => excludedProps.includes(key) || row[key] === outputRow[key])
-    )
+function removeDuplicates(incoming, existing, includedProps, excludedProps) {
+  return incoming.filter(
+    (row) =>
+      !existing.some((outputRow) =>
+        Object.keys(row).every(
+          (key) =>
+            excludedProps.includes(key) ||
+            ((!includedProps || includedProps.includes(key)) &&
+              row[key] === outputRow[key])
+        )
+      )
   );
 }
 
 async function insertRowsIntoOutputTable(tableId, rows) {
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
-  console.log('retrievedRows:', retrievedRows)
-  const filteredRows = removeDuplicates(rows, retrievedRows, ["id", "request"]);
-  console.log('filteredRows:', filteredRows)
+  console.log("retrievedRows:", retrievedRows);
+  const filteredRows = removeDuplicates(rows, retrievedRows, ["url"]);
+  console.log("filteredRows:", filteredRows);
   const preparedRows = filteredRows.map((row) => ({ fields: row }));
   const outputTable = grist.getTable(tableId);
   await outputTable.create(preparedRows);
