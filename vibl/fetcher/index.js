@@ -71,6 +71,7 @@ async function onRecord(request) {
     const results = await sendRequest(endpoint, query);
     const output = await transformResults(output_jsonata, results);
     const rows = output.map((row) => ({ ...row, request: id }));
+    console.log('rows:', rows)
     await insertRowsIntoOutputTable(output_table, rows);
     requestsTable = grist.getTable();
     requestsTable.update({ id, fields: { success: true } });
@@ -126,6 +127,7 @@ function removeDuplicates(incoming, existing) {
 
 async function insertRowsIntoOutputTable(tableId, rows) {
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
+  console.log('retrievedRows:', retrievedRows)
   const filteredRows = removeDuplicates(rows, retrievedRows);
   console.log('filteredRows:', filteredRows)
   const preparedRows = filteredRows.map((row) => ({ fields: row }));
