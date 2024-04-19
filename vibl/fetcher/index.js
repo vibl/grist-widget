@@ -82,7 +82,8 @@ async function sendRequest(endpoint, query) {
   } else {
     options.method = "GET";
     const endpointParams = JSON.parse(endpointParamsStr);
-    console.log('endpointParams:', endpointParams)
+    console.log('paramsJsonata:', paramsJsonata)
+    console.log('query:', query)
     const queryParams = await jsonata(paramsJsonata).evaluate(query);
     console.log('queryParams:', queryParams)
     const params = { ...endpointParams, ...queryParams };
