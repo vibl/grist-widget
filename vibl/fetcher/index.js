@@ -49,6 +49,7 @@ async function onRecord(request) {
     const { id, queryRef } = request;
     console.log('request:', request)
     const queries = transposeAndIndex(await grist.docApi.fetchTable(queryRef.tableId));
+    console.log('queries:', queries);
     const query = queries.get(queryRef.rowId);
     console.log('query:', query)
     const endpoints = transposeAndIndex(await grist.docApi.fetchTable("Endpoint"));
