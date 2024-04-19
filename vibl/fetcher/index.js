@@ -41,6 +41,7 @@ async function onRecord(request) {
   if (!isNewRecord) return;
   try {
     const { id, query_id } = request;
+    console.log('request:', request)
     const queries = transposeAndIndex(await grist.docApi.fetchTable("Queries"));
     const query = queries.get(query_id);
     console.log('query:', query)
