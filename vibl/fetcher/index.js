@@ -11,11 +11,10 @@ async function setIsNewRecord() {
   isNewRecord = false;
 }
 
-function transposeAndIndex(indexKey, data) {
+function transpose( data) {
   const keys = Object.keys(data);
-  const result = new Map();
+  const result = [];
 
-  // Assuming all arrays are of the same length
   const length = data[keys[0]].length;
 
   for (let i = 0; i < length; i++) {
@@ -23,10 +22,23 @@ function transposeAndIndex(indexKey, data) {
     keys.forEach((key) => {
       obj[key] = data[key][i];
     });
-    indexValue = obj[indexKey];
-    result.set(indexValue, obj);
+    result.push[obj];
   }
   return result;
+}
+
+function indexBy(indexKey, data) {
+    const map = new Map();
+    for (const item of data) {
+        if (item.hasOwnProperty(indexKey)) {
+            map.set(item[indexKey], item);
+        }
+    }
+    return map;
+}
+
+function transposeAndIndex(indexKey, data) {
+  return indexBy(indexKey, transpose(result));
 }
 
 /* async function fetchRows(tableId) {
@@ -45,7 +57,6 @@ ready(function () {
 });
 
 async function onRecord(request) {
-  console.log('request:', request)
   if (!isNewRecord) return;
   if (request.id === currentRecordID) return;
   try {
@@ -105,11 +116,21 @@ async function transformResults(jsonataPattern, results) {
   return jsonata(jsonataPattern).evaluate(results);
 }
 
-async function insertRowsIntoOutputTable(tableId, output) {
+function removeDuplicates(incoming, existing) {
+  return incoming.filter(row => 
+    !existing.some(outputRow => 
+      Object.keys(row).every(key => row[key] === outputRow[key])
+    )
+  );
+}
+
+async function insertRowsIntoOutputTable(tableId, rows) {
+  const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
+  const filteredRows = removeDuplicates(rows, retrievedRows);
+  console.log('filteredRows:', filteredRows)
+  const preparedRows = filteredRows.map((row) => ({ fields: row }));
   const outputTable = grist.getTable(tableId);
-  const rows = output.map((row) => ({ fields: row }));
-  console.log('rows:', rows)
-  await outputTable.create(rows);
+  await outputTable.create(preparedRows);
 }
 
 function handleError(err) {
