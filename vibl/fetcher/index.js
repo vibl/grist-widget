@@ -7,6 +7,7 @@ ready(function () {
 });
 
 async function onNewRecord(record) {
+  console.log('record:', record);
   try {
     const {
       id,
@@ -46,7 +47,7 @@ async function sendRequest(record) {
   }
   try {
     const response = await fetch(url, options);
-    return response.json();
+    return response.json(); 
   } catch (err) {
     handleError(err);
   }
