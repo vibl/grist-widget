@@ -43,8 +43,10 @@ async function onRecord(request) {
     const { id, query_id } = request;
     const queries = transposeAndIndex(await grist.docApi.fetchTable("Queries"));
     const query = queries.get(query_id);
+    console.log('query:', query)
     const endpoints = transposeAndIndex(await grist.docApi.fetchTable("Endpoint"));
     const endpoint = endpoints.get(query.endpoint);
+    console.log('endpoint:', endpoint)
     const { output_table, output_jsonata } = endpoint;
     // const id = requestsTable.create({ fields: {  } });
     const results = await sendRequest(endpoint, request);
