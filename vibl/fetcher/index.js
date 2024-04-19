@@ -106,7 +106,8 @@ async function transformResults(jsonataPattern, results) {
 
 async function insertRowsIntoOutputTable(tableId, output) {
   const outputTable = grist.getTable(tableId);
-  await outputTable.upsert(output.map((row) => ({ fields: row })));
+  const rows = output.map((row) => ({ fields: row }));
+  await outputTable.create(rows);
 }
 
 function handleError(err) {
