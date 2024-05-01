@@ -153,6 +153,7 @@ async function updateRows(tableId, rows) {
 
 async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
+  console.log('retrievedRows:', retrievedRows)
   const { absent, present } = classifyPresence(rows, retrievedRows, ["url"]);
   console.log({ absent, present });
   const modifiedRows = present.map((row) => ({ ...row, requests: [...row.requests, requestId]}));
