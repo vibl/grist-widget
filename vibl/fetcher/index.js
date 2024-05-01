@@ -71,7 +71,7 @@ async function onRecord(query) {
     const requestsTable = grist.getTable("Requests");
     const { id: requestId } = await requestsTable.create({ fields: { queryRef: id } });
     const output = await transformResults(output_jsonata, results);
-    const rows = output.map((row) => ({ ...row, requests: [ "L", requestId ] }));
+    const rows = output.map((row) => ({ ...row, requests: ["r", "Requests", [requestId]] }));
     await upsertRowsIntoOutputTable(output_table, rows, requestId);
     await requestsTable.update({ id: requestId, fields: { success: true } });
   } catch (err) {
@@ -157,7 +157,7 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   console.log('retrievedRows:', retrievedRows)
   const { absent, present } = classifyPresence(rows, retrievedRows, ["url"]);
   console.log({ absent, present });
-  const modifiedRows = present.map((row) => ({ ...row, requests: [ "L", requestId]}));
+  const modifiedRows = present.map((row) => ({ ...row, requests: ["r", "Requests", [requestId]]}));
   console.log('modifiedRows :', modifiedRows)
   await updateRows(tableId, modifiedRows);
   await insertRows(tableId, absent);
