@@ -71,7 +71,7 @@ async function onRecord(query) {
     const { id: requestId } = await requestsTable.create({ fields: {  queryRef: [ id ] } });
     const output = await transformResults(output_jsonata, results);
     const rows = output.map((row) => ({ ...row, request: id }));
-    await insertRowsIntoOutputTable(output_table, rows);
+    await upsertRowsIntoOutputTable(output_table, rows, requestId);
     await requestsTable.update({ id: requestId, fields: { success: true } });
   } catch (err) {
     handleError(err);
@@ -115,41 +115,49 @@ async function transformResults(jsonataPattern, results) {
   return jsonata(jsonataPattern).evaluate(results);
 }
 
-function removeDuplicates(incoming, existing, includedKeys, excludedKeys = []) {
-  return incoming.filter(
-    (incomingRow) => !existing.some(
-      (existingRow) => {
-        const propsToCheck = includedKeys || Object.keys(incomingRow).filter(key => !excludedKeys.includes(key));
-        return propsToCheck.every(
-          (prop) => excludedKeys.includes(prop) ||incomingRow[prop] === existingRow[prop]
-        );
-      }
-    )
-  );
-}
-/* 
-function updateDuplicates(incoming, existing, includedKeys, excludedKeys = []) {
-  return incoming.map(
-    (incomingRow) => !existing.some(
-      (existingRow) => {
-        const propsToCheck = includedKeys || Object.keys(incomingRow).filter(key => !excludedKeys.includes(key));
-        return propsToCheck.every(
-          (prop) => excludedKeys.includes(prop) ||incomingRow[prop] === existingRow[prop]
-        );
-      }
-    )
-  );
-}
-*/
+function classifyPresence(incomingList, existingList, includedKeys, excludedKeys = []) {
+  const absent = [];
+  const present = [];
 
-async function insertRowsIntoOutputTable(tableId, rows) {
-  console.log('rows:', rows)
-  const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
-  const filteredRows = removeDuplicates(rows, retrievedRows, ["url"]);
-  console.log('filteredRows:', filteredRows)
-  const preparedRows = filteredRows.map((row) => ({ fields: row }));
+  incomingList.forEach((incomingItem) => {
+    const isPresent = existingList.some((existingRow) => {
+      const propsToCheck = includedKeys || Object.keys(incomingItem).filter(key => !excludedKeys.includes(key));
+      return propsToCheck.every(
+        (prop) => excludedKeys.includes(prop) || incomingItem[prop] === existingRow[prop]
+      );
+    });
+    if (isPresent) {
+      present.push(incomingItem);
+    } else {
+      absent.push(incomingItem);
+    }
+  });
+
+  return { absent, present };
+}
+
+async function tableOperation(operation, tableId, rows) {
+  const preparedRows = rows.map((row) => ({ fields: row }));
   const outputTable = grist.getTable(tableId);
-  await outputTable.create(preparedRows);
+  await outputTable[operation](preparedRows);
+}
+
+async function insertRows(tableId, rows) {
+  return tableOperation("create", tableId, rows);
+}
+
+async function updateRows(tableId, rows) {
+  return tableOperation("update", tableId, rows);
+}
+
+async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
+  const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
+  const { absent, present } = classifyPresence(rows, retrievedRows, ["url"]);
+  console.log({ absent, present });
+  const modifiedRows = present.map((row) => ({ ...row, requests: `${row.requests},${requestId}` }));
+  console.log('modifiedRows:', modifiedRows)
+  await updateRows(tableId, modifiedRows);
+  await insertRows(tableId, absent);
 }
 
 function handleError(err) {
