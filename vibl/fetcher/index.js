@@ -67,6 +67,7 @@ async function onRecord(query) {
     const endpoint = endpoints.get(endpointRef.rowId);
     const { output_table, output_jsonata } = endpoint;
     const results = await sendRequest(endpoint, query);
+    console.log('results:', results)
     const requestsTable = grist.getTable("Requests");
     const { id: requestId } = await requestsTable.create({ fields: {  queryRef: [ id ] } });
     const output = await transformResults(output_jsonata, results);
