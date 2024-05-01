@@ -69,7 +69,7 @@ async function onRecord(query) {
     const results = await sendRequest(endpoint, query);
     console.log('results:', results)
     const requestsTable = grist.getTable("Requests");
-    const { id: requestId } = await requestsTable.create({ fields: {  queryRef: id } });
+    const { id: requestId } = await requestsTable.create({ fields: { queryRef: id } });
     const output = await transformResults(output_jsonata, results);
     const rows = output.map((row) => ({ ...row, requests: [ "L", requestId ] }));
     await upsertRowsIntoOutputTable(output_table, rows, requestId);
@@ -152,6 +152,7 @@ async function updateRows(tableId, rows) {
 }
 
 async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
+  console.log('requestId:', requestId)
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
   console.log('retrievedRows:', retrievedRows)
   const { absent, present } = classifyPresence(rows, retrievedRows, ["url"]);
