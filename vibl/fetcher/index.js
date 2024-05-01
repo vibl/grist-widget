@@ -127,6 +127,20 @@ function removeDuplicates(incoming, existing, includedKeys, excludedKeys = []) {
     )
   );
 }
+/* 
+function updateDuplicates(incoming, existing, includedKeys, excludedKeys = []) {
+  return incoming.map(
+    (incomingRow) => !existing.some(
+      (existingRow) => {
+        const propsToCheck = includedKeys || Object.keys(incomingRow).filter(key => !excludedKeys.includes(key));
+        return propsToCheck.every(
+          (prop) => excludedKeys.includes(prop) ||incomingRow[prop] === existingRow[prop]
+        );
+      }
+    )
+  );
+}
+*/
 
 async function insertRowsIntoOutputTable(tableId, rows) {
   console.log('rows:', rows)
