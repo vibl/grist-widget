@@ -157,7 +157,7 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   console.log('retrievedRows:', retrievedRows)
   const { absent, present } = classifyPresence(rows, retrievedRows, ["url"]);
   console.log({ absent, present });
-  const modifiedRows = present.map((row) => ({ ...row, requests: [...row.requests, requestId ] }));
+  const modifiedRows = present.map((row) => ({ ...row, requests: [ requestId ] }));
   // const modifiedRows = present;
   console.log('modifiedRows :', modifiedRows)
   if (modifiedRows.length > 0) {
