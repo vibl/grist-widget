@@ -139,45 +139,35 @@ function classifyPresence(incomingList, existingList, includedKeys, excludedKeys
   return results;
 }
 
-async function tableOperation(operation, tableId, rows) {
-  const preparedRows = rows.map((row) => {
-    const preparedRow = { fields: row };
-    if(operation === 'update') {
-      preparedRow.id = row.id;
-      delete preparedRow.fields.id;
-    }
-    return preparedRow;
-  });
-  const outputTable = grist.getTable(tableId);
-  await outputTable[operation](preparedRows);
-}
-
-async function insertRows(tableId, rows) {
-  return tableOperation("create", tableId, rows);
-}
-
-async function updateRows(tableId, rows) {
-  return tableOperation("update", tableId, rows);
-}
-
 async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   console.log('requestId:', requestId)
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
   console.log('retrievedRows:', retrievedRows)
   const { absent, present, similar } = classifyPresence(rows, retrievedRows, ["url"]);
-  console.log({ absent, present });
   const changedRows = present.map((row, index) => ({ 
     ...row,
-    id: similar[index].id,
     requests: [ ...row.requests, requestId ] 
   }));
 
-  if (changedRows.length > 0) {
-    await updateRows(tableId, changedRows);
+  const outputTable = grist.getTable(tableId);
+
+  function tableOperation(operation, rows) {
+    function prepareRow(row, index) {
+      const preparedRow = { fields: { 
+        ...row,
+        requests: [ ...row.requests, requestId ],
+      } };
+      if(operation === 'update') {
+        preparedRow.id = similar[index].id;
+      }
+      return preparedRow;
+
+    }
+    return outputTable[operation](rows.map(prepareRow));
   }
-  if (absent.length > 0) {
-    await insertRows(tableId, absent);
-  }
+
+  await tableOperation("update", changedRows);
+  await tableOperation("create", absent);
 }
 
 function handleError(err) {
