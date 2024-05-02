@@ -117,24 +117,26 @@ async function transformResults(jsonataPattern, results) {
 }
 
 function classifyPresence(incomingList, existingList, includedKeys, excludedKeys = []) {
-  const absent = [];
-  const present = [];
+  const results = {
+    absent: [],
+    present: [],
+    similar: []
+  };
+  const filteredKeys = includedKeys.filter(key => !excludedKeys.includes(key));
 
-  incomingList.forEach((incomingItem) => {
-    const isPresent = existingList.some((existingRow) => {
-      const propsToCheck = includedKeys || Object.keys(incomingItem).filter(key => !excludedKeys.includes(key));
-      return propsToCheck.every(
-        (prop) => excludedKeys.includes(prop) || incomingItem[prop] === existingRow[prop]
-      );
-    });
-    if (isPresent) {
-      present.push(incomingItem);
+  for( const incomingItem of incomingList) {
+    const existingMatch = existingList.find(existingItem =>
+      filteredKeys.every(key => incomingItem[key] === existingItem[key])
+    );
+    if (existingMatch) {
+      results.similar.push(existingMatch);
+      results.present.push(incomingItem);
     } else {
-      absent.push(incomingItem);
+      results.absent.push(incomingItem);
     }
-  });
+  }
 
-  return { absent, present };
+  return results;
 }
 
 async function tableOperation(operation, tableId, rows) {
@@ -162,12 +164,16 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   console.log('requestId:', requestId)
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
   console.log('retrievedRows:', retrievedRows)
-  const { absent, present } = classifyPresence(rows, retrievedRows, ["url"]);
+  const { absent, present, similar } = classifyPresence(rows, retrievedRows, ["url"]);
   console.log({ absent, present });
-  const modifiedRows = present.map((row) => ({ ...row, requests: [ ...row.requests, requestId ] }));
-  // const modifiedRows = present;
-  if (modifiedRows.length > 0) {
-    await updateRows(tableId, modifiedRows);
+  const changedRows = present.map((row, index) => ({ 
+    ...row,
+    id: similar[index].id,
+    requests: [ ...row.requests, requestId ] 
+  }));
+
+  if (changedRows.length > 0) {
+    await updateRows(tableId, changedRows);
   }
   if (absent.length > 0) {
     await insertRows(tableId, absent);
