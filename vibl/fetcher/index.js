@@ -70,8 +70,7 @@ async function onRecord(query) {
     console.log('results:', results)
     const requestsTable = grist.getTable("Requests");
     const { id: requestId } = await requestsTable.create({ fields: { queryRef: id } });
-    const output = await transformResults(output_jsonata, results);
-    const rows = output.map((row) => ({ ...row, requests: [ "L", requestId ] }));
+    const rows = await transformResults(output_jsonata, results);
     await upsertRowsIntoOutputTable(output_table, rows, requestId);
     await requestsTable.update({ id: requestId, fields: { success: true } });
   } catch (err) {
@@ -119,8 +118,8 @@ async function transformResults(jsonataPattern, results) {
 function classifyPresence(incomingList, existingList, includedKeys, excludedKeys = []) {
   const results = {
     absent: [],
-    present: [],
-    similar: []
+    duplicate: [],
+    original: []
   };
   const filteredKeys = includedKeys.filter(key => !excludedKeys.includes(key));
 
@@ -129,8 +128,8 @@ function classifyPresence(incomingList, existingList, includedKeys, excludedKeys
       filteredKeys.every(key => incomingItem[key] === existingItem[key])
     );
     if (existingMatch) {
-      results.similar.push(existingMatch);
-      results.present.push(incomingItem);
+      results.original.push(existingMatch);
+      results.duplicate.push(incomingItem);
     } else {
       results.absent.push(incomingItem);
     }
@@ -143,25 +142,29 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   console.log('requestId:', requestId)
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
   console.log('retrievedRows:', retrievedRows)
-  const { absent, present, similar } = classifyPresence(rows, retrievedRows, ["url"]);
+  const { absent, duplicate, original } = classifyPresence(rows, retrievedRows, ["url"]);
   const outputTable = grist.getTable(tableId);
 
   function tableOperation(operation, rows) {
-    function prepareRow(row, index) {
-      const preparedRow = { fields: { 
-        ...row,
-        requests: [ ...row.requests, requestId ],
-      } };
-      if(operation === 'update') {
-        preparedRow.id = similar[index].id;
-      }
-      return preparedRow;
-
-    }
+    const prepareRow = (row, i) => operation === 'create'
+      ? {
+          fields: {
+            ...row,
+            requests: [ "L", requestId]
+          }
+        }
+      : {
+          id: original[i].id,
+          fields: {
+            ...row,
+            requests: [...original[i].requests, requestId]
+          }
+        };
+    
     return outputTable[operation](rows.map(prepareRow));
   }
 
-  await tableOperation("update", present);
+  await tableOperation("update", duplicate);
   await tableOperation("create", absent);
 }
 
