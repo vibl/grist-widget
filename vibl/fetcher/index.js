@@ -52,12 +52,10 @@ ready(function () {
 async function onRecord(query) {
   if (!query.send) return;
   console.log('query:', query)
-
-/*   if (query.id === currentQueryID) return;
-  currentQueryID = query.id; */
+  if (query.id === currentQueryID) return;
+  currentQueryID = query.id;
   try {
     const { id, endpointRef } = query;
-    console.log('endpointRef:', endpointRef)
     const queriesTable = grist.getTable();
     await queriesTable.update({ id, fields: { send: false } });
     const endpoints = transposeAndIndex(
