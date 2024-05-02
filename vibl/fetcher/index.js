@@ -143,11 +143,11 @@ async function tableOperation(operation, tableId, rows) {
   const preparedRows = rows.map((row) => {
     const preparedRow = { fields: row };
     if(operation === 'update') {
-      preparedRow.id = row.id;
+      preparedRow.coldId = row.id;
+      delete preparedRow.fields.id;
     }
     return preparedRow;
   });
-  console.log('preparedRows:', preparedRows);
   const outputTable = grist.getTable(tableId);
   await outputTable[operation](preparedRows);
 }
