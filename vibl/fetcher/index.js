@@ -143,7 +143,7 @@ async function tableOperation(operation, tableId, rows) {
   const preparedRows = rows.map((row) => {
     const preparedRow = { fields: row };
     if(operation === 'update') {
-      preparedRow.coldId = row.id;
+      preparedRow.id = row.id;
       delete preparedRow.fields.id;
     }
     return preparedRow;
