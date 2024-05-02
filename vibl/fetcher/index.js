@@ -51,7 +51,8 @@ ready(function () {
 
 async function onRecord(query) {
   if (!query.send) return;
-  console.log('query:', query)
+  console.log('query id:', query.id)
+  console.log('currentQueryID:', currentQueryID)
   if (query.id === currentQueryID) return;
   currentQueryID = query.id;
   try {
@@ -65,7 +66,7 @@ async function onRecord(query) {
     const endpoint = endpoints.get(endpointRef.rowId);
     const { output_table, output_jsonata } = endpoint;
     const results = await sendRequest(endpoint, query);
-    console.log('results:', results)
+    console.log('request results:', results)
     const requestsTable = grist.getTable("Requests");
     const { id: requestId } = await requestsTable.create({ fields: { queryRef: id } });
     const rows = await transformResults(output_jsonata, results);
