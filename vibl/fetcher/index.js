@@ -138,13 +138,14 @@ function classifyPresence(incomingList, existingList, includedKeys, excludedKeys
 }
 
 async function tableOperation(operation, tableId, rows) {
-  let preparedRows = rows.map((row) => {
+  const preparedRows = rows.map((row) => {
     const preparedRow = { fields: row };
     if(operation === 'update') {
       preparedRow.id = row.id;
     }
     return preparedRow;
   });
+  console.log('preparedRows:', preparedRows);
   const outputTable = grist.getTable(tableId);
   await outputTable[operation](preparedRows);
 }
@@ -165,7 +166,6 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   console.log({ absent, present });
   const modifiedRows = present.map((row) => ({ ...row, requests: [ ...row.requests, requestId ] }));
   // const modifiedRows = present;
-  console.log('modifiedRows :', modifiedRows)
   if (modifiedRows.length > 0) {
     await updateRows(tableId, modifiedRows);
   }
