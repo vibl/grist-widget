@@ -51,8 +51,8 @@ ready(function () {
 
 async function onRecord(query) {
   if (!query.send) return;
-  console.log('query id:', query.id)
-  console.log('currentQueryID:', currentQueryID)
+  console.log('query:', query);
+  console.log('currentQueryID:', currentQueryID);
   if (query.id === currentQueryID) return;
   currentQueryID = query.id;
   try {
@@ -97,6 +97,7 @@ async function sendRequest(endpoint, query) {
     options.method = "GET";
     const endpointParams = JSON.parse(endpointParamsStr);
     const queryParams = await jsonata(paramsJsonata).evaluate(query);
+    console.log('paramsJsonata:', paramsJsonata)
     console.log('queryParams:', queryParams)
     const params = { ...endpointParams, ...queryParams };
     const queryString = new URLSearchParams(params).toString();
