@@ -71,10 +71,9 @@ async function onRecord(request) {
 }
 
 async function getEndpoint(endpointRef) {
-  console.log('endpointRef:', endpointRef)
   const endpointTableRows = await grist.docApi.fetchTable(endpointRef.tableId);
   const endpoints = transposeAndIndex("id", endpointTableRows);
-  return endpoints.get(endpointRef.rowIds[0]);
+  return endpoints.get(endpointRef.rowId);
 }
 
 async function sendRequest(endpoint, request) {
