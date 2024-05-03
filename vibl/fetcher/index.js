@@ -144,8 +144,8 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
 
   function tableOperation(operation, rows) {
     console.log('operation:', operation)
-    console.log('original[i]:', original[i]);
-    const prepareRow = (row, i) => operation === 'create'
+    const prepareRow = (row, i) => {     console.log('original[i]:', original[i]);
+      return  operation === 'create'
       ? {
           fields: {
             ...row,
@@ -159,7 +159,7 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
             requests: [...original[i].requests, requestId]
           }
         };
-    
+      };
     return outputTable[operation](rows.map(prepareRow));
   }
 
