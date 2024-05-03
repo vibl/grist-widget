@@ -71,6 +71,7 @@ async function onRecord(request) {
 }
 
 async function getEndpoint(endpointRef) {
+  console.log('endpointRef:', endpointRef)
   const endpointTableRows = await grist.docApi.fetchTable(endpointRef.tableId);
   const endpoints = transposeAndIndex("id", endpointTableRows);
   return endpoints.get(endpointRef.rowIds[0]);
@@ -138,6 +139,7 @@ function classifyPresence(incomingList, existingList, includedKeys, excludedKeys
 }
 
 async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
+  console.log('requestId:', requestId)
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
   const { absent, duplicate, original } = classifyPresence(rows, retrievedRows, ["url"]);
   const outputTable = grist.getTable(tableId);
