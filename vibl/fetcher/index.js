@@ -52,14 +52,12 @@ ready(function () {
 async function onRecord(request) {
   console.log('request:', request)
   if (!request.sent || request.sent_at || !request.query) return; // Not requested or already sent.
-  console.log('request:', request);
   console.log('currentRequestID:', currentRequestID);
   if (request.id === currentRequestID) return;
   currentRequestID = request.id;
   try {
     const { id, endpointRef } = request;
     const queriesTable = grist.getTable();
-    await queriesTable.update({ id, fields: { send: false } });
     const endpoint = await getEndpoint(endpointRef);
     console.log('endpoint:', endpoint);
     const { output_table, output_jsonata } = endpoint;
