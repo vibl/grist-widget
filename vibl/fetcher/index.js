@@ -1,5 +1,5 @@
 let isNewRecord = false;
-let currentQueryID = null;
+let currentRequestID = null;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -46,28 +46,28 @@ ready(function () {
     requiredAccess: "full",
   });
   grist.onRecord(onRecord);
-  // console.log("Fetcher: Ready.");
+  console.log("Fetcher: Ready.");
 });
 
-async function onRecord(query) {
-  if (!query.send) return;
-  console.log('query:', query);
-  console.log('currentQueryID:', currentQueryID);
-  if (query.id === currentQueryID) return;
-  currentQueryID = query.id;
+async function onRecord(request) {
+  console.log('request:', request)
+  if (!request.sent || request.sent_at || !request.query) return; // Not requested or already sent.
+  console.log('request:', request);
+  console.log('currentRequestID:', currentRequestID);
+  if (request.id === currentRequestID) return;
+  currentRequestID = request.id;
   try {
-    const { id, endpointRef } = query;
+    const { id, endpointRef } = request;
     const queriesTable = grist.getTable();
     await queriesTable.update({ id, fields: { send: false } });
     const endpoint = await getEndpoint(endpointRef);
+    console.log('endpoint:', endpoint);
     const { output_table, output_jsonata } = endpoint;
-    const results = await sendRequest(endpoint, query);
-    console.log('request results:', results)
-    const requestsTable = grist.getTable("Requests");
-    const { id: requestId } = await requestsTable.create({ fields: { queryRef: id } });
+    const results = await sendRequest(endpoint, request);
+    console.log('request results:', results);
     const rows = await transformResults(output_jsonata, results);
-    await upsertRowsIntoOutputTable(output_table, rows, requestId);
-    await requestsTable.update({ id: requestId, fields: { success: true } });
+    await upsertRowsIntoOutputTable(output_table, rows, id);
+    await requestsTable.update({ id: requestId, fields: { sent_at: new Date() } });
   } catch (err) {
     handleError(err);
   }
@@ -76,12 +76,10 @@ async function onRecord(query) {
 async function getEndpoint(endpointRef) {
   const endpointTableRows = await grist.docApi.fetchTable(endpointRef.tableId);
   const endpoints = transposeAndIndex("id", endpointTableRows);
-  const endpoint = endpoints.get(endpointRef.rowIds[0]);
-  console.log('endpoint:', endpoint);
-  return endpoint;
+  return endpoints.get(endpointRef.rowIds[0]);
 }
 
-async function sendRequest(endpoint, query) {
+async function sendRequest(endpoint, request) {
   const {
     body: endpointBodyStr,
     body_jsonata: bodyJsonata,
@@ -94,18 +92,17 @@ async function sendRequest(endpoint, query) {
   if (endpointBodyStr) {
     options.method = "POST";
     const endpointBody = JSON.parse(endpointBodyStr);
-    const queryBody = await jsonata(bodyJsonata).evaluate(query);
-    options.body = { ...endpointBody, ...queryBody };
+    const requestBody = await jsonata(bodyJsonata).evaluate(request);
+    options.body = { ...endpointBody, ...requestBody };
+    console.log('options.body:', options.body)
     url = endpointUrl;
   } else {
     options.method = "GET";
     const endpointParams = JSON.parse(endpointParamsStr);
-    const queryParams = await jsonata(paramsJsonata).evaluate(query);
-    console.log('paramsJsonata:', paramsJsonata)
-    console.log('queryParams:', queryParams)
-    const params = { ...endpointParams, ...queryParams };
-    const queryString = new URLSearchParams(params).toString();
-    url = `${endpointUrl}?${queryString}`; // url should end with "/" for this to work!
+    const requestParams = await jsonata(paramsJsonata).evaluate(request);
+    const params = { ...endpointParams, ...requestParams };
+    const paramsString = new URLSearchParams(params).toString();
+    url = `${endpointUrl}?${paramsString}`; // url should end with "/" for this to work!
   }
   try {
     console.log("url:", url);
@@ -144,9 +141,7 @@ function classifyPresence(incomingList, existingList, includedKeys, excludedKeys
 }
 
 async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
-  console.log('requestId:', requestId)
   const retrievedRows = transpose(await grist.docApi.fetchTable(tableId));
-  console.log('retrievedRows:', retrievedRows)
   const { absent, duplicate, original } = classifyPresence(rows, retrievedRows, ["url"]);
   const outputTable = grist.getTable(tableId);
 
