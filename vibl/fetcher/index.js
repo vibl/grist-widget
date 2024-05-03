@@ -51,7 +51,7 @@ ready(function () {
 
 async function onRecord(request) {
   console.log('request:', request)
-  if (!request.sent || request.sent_at || !request.query) return; // Not requested or already sent.
+  if (!request.send || request.sent_at || !request.query) return; // Not requested or already sent.
   console.log('currentRequestID:', currentRequestID);
   if (request.id === currentRequestID) return;
   currentRequestID = request.id;
