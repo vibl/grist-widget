@@ -56,16 +56,15 @@ async function onRecord(request) {
   if (request.id === currentRequestID) return;
   currentRequestID = request.id;
   try {
-    const { id, endpointRef } = request;
     const requestsTable = grist.getTable();
-    const endpoint = await getEndpoint(endpointRef);
+    const endpoint = await getEndpoint(request.endpointRef);
     console.log('endpoint:', endpoint);
     const { output_table, output_jsonata } = endpoint;
     const results = await sendRequest(endpoint, request);
     console.log('request results:', results);
     const rows = await transformResults(output_jsonata, results);
-    await upsertRowsIntoOutputTable(output_table, rows, id);
-    await requestsTable.update({ id: requestId, fields: { sent_at: new Date() } });
+    await upsertRowsIntoOutputTable(output_table, rows, request.id);
+    await requestsTable.update({ id: request.id, fields: { sent_at: new Date() } });
   } catch (err) {
     handleError(err);
   }
@@ -144,6 +143,8 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   const outputTable = grist.getTable(tableId);
 
   function tableOperation(operation, rows) {
+    console.log('operation:', operation)
+    console.log('original[i]:', original[i]);
     const prepareRow = (row, i) => operation === 'create'
       ? {
           fields: {
