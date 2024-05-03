@@ -144,9 +144,7 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
   const outputTable = grist.getTable(tableId);
 
   function tableOperation(operation, rows) {
-    console.log('operation:', operation)
-    const prepareRow = (row, i) => { original[i] && console.log('original[i]:', original[i]);
-      return  operation === 'create'
+    const prepareRow = (row, i) => operation === 'create'
       ? {
           fields: {
             ...row,
@@ -160,7 +158,6 @@ async function upsertRowsIntoOutputTable(tableId, rows, requestId) {
             requests: [...original[i].requests, requestId]
           }
         };
-      };
     return outputTable[operation](rows.map(prepareRow));
   }
   if (absent.length > 0) {
