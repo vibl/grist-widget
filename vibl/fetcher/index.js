@@ -57,7 +57,7 @@ async function onRecord(request) {
   currentRequestID = request.id;
   try {
     const { id, endpointRef } = request;
-    const queriesTable = grist.getTable();
+    const requestsTable = grist.getTable();
     const endpoint = await getEndpoint(endpointRef);
     console.log('endpoint:', endpoint);
     const { output_table, output_jsonata } = endpoint;
