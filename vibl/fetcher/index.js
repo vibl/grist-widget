@@ -59,12 +59,7 @@ async function onRecord(query) {
     const { id, endpointRef } = query;
     const queriesTable = grist.getTable();
     await queriesTable.update({ id, fields: { send: false } });
-    const endpoints = transposeAndIndex(
-      "id",
-      await grist.docApi.fetchTable(endpointRef.tableId)
-    );
-    const endpoint = endpoints.get(endpointRef.rowIds[0]);
-    const { output_table, output_jsonata } = endpoint;
+    const { output_table, output_jsonata } = await getEndpoint(endpointRef);
     const results = await sendRequest(endpoint, query);
     console.log('request results:', results)
     const requestsTable = grist.getTable("Requests");
@@ -75,6 +70,14 @@ async function onRecord(query) {
   } catch (err) {
     handleError(err);
   }
+}
+
+async function getEndpoint(endpointRef) {
+  const endpointTableRows = await grist.docApi.fetchTable(endpointRef.tableId);
+  const endpoints = transposeAndIndex("id", endpointTableRows);
+  const endpoint = endpoints.get(endpointRef.rowIds[0]);
+  console.log('endpoint:', endpoint);
+  return endpoint;
 }
 
 async function sendRequest(endpoint, query) {
