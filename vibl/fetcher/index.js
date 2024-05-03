@@ -97,6 +97,7 @@ async function sendRequest(endpoint, query) {
     options.method = "GET";
     const endpointParams = JSON.parse(endpointParamsStr);
     const queryParams = await jsonata(paramsJsonata).evaluate(query);
+    console.log('queryParams:', queryParams)
     const params = { ...endpointParams, ...queryParams };
     const queryString = new URLSearchParams(params).toString();
     url = `${endpointUrl}?${queryString}`; // url should end with "/" for this to work!
